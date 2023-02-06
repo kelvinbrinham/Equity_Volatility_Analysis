@@ -14,7 +14,7 @@ columns_lst = ['Dataset', 'No. repeated rows', 'No. Missing time stamps', 'No. M
 cleaning_stats_df = pd.DataFrame(columns = columns_lst)
 cleaning_stats_df_lst = []
 stock_df_lst = []
-k = 1.5
+k = 1
 
 #For each data set...
 for letter in [*string.ascii_uppercase][:4]:

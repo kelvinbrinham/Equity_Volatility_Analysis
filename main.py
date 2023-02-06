@@ -23,7 +23,7 @@ print(stock_A_df)
 # df_hist.hist(figsize=(5, 5), bins = 20)
 # plt.show()
 
-# plt.plot(stock_A_df['ts'][0::20], stock_A_df['price'][0::20])
-# # plt.plot(stock_A_df['ts'], stock_A_df['volume'])
-# plt.show()
+plt.plot(stock_A_df['ts'][0::20], stock_A_df['price'][0::20])
+# plt.plot(stock_A_df['ts'], stock_A_df['volume'])
+plt.show()
 

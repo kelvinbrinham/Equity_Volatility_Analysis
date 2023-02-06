@@ -47,7 +47,7 @@ for letter in [*string.ascii_uppercase][:4]:
         #Count negative values
         stock_letter_data_cleaning_stats_df['No. Negative Values'] += sum(n < 0 for n in stock_letter_df_unclean[column_].values.flatten())
         #Remove negative values
-        stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] < 0].index, inplace = True)
+        stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] < 0].index)
 
         #Count outliers
         IQR = stats.iqr(stock_letter_df_unclean[column_])
@@ -61,8 +61,8 @@ for letter in [*string.ascii_uppercase][:4]:
         stock_letter_data_cleaning_stats_df['Outliers'] += sum(n > upper_bound for n in stock_letter_df_unclean[column_].values.flatten())
 
         #Remove outliers
-        stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] < lower_bound].index, inplace = True)
-        stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] > upper_bound].index, inplace = True)
+        stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] < lower_bound].index)
+        stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] > upper_bound].index)
 
     stock_letter_df_clean = stock_letter_df_unclean
 

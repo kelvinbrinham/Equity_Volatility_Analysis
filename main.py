@@ -15,6 +15,5 @@ from cleaning import stock_df_lst
 
 stock_A_df = stock_df_lst[0]
 
-plt.figure()
-plt.plot(stock_A_df['ts'][0::1000], stock_A_df['price'][0::1000])
-plt.show()
+df_hist = stock_A_df.drop(columns=['ts'], axis=1)
+df_hist.hist(figsize=(15, 15))

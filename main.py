@@ -19,11 +19,13 @@ stock_A_df = stock_df_lst[0]
 print(stock_A_df.describe())
 print(stock_A_df)
 
+
+
 # df_hist = stock_A_df.drop(columns=['ts'], axis=1)
 # df_hist.hist(figsize=(5, 5), bins = 20)
 # plt.show()
 
-plt.plot(stock_A_df['ts'][0::20], stock_A_df['price'][0::20])
-# plt.plot(stock_A_df['ts'], stock_A_df['volume'])
-plt.show()
+# plt.plot(stock_A_df['ts'][0::20], stock_A_df['price'][0::20])
+# # plt.plot(stock_A_df['ts'], stock_A_df['volume'])
+# plt.show()
 

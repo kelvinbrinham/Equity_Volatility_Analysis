@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 import string
 import stats
 
-columns_lst = ['Dataset', 'No. repeated rows', 'No. Missing time stamps', 'No. Missing prices', 'No. Missing volumes', 'No. Negative Values', 'Outliers']
+columns_lst = ['Dataset', 'Unclean size', 'No. repeated rows', 'No. Missing time stamps', 'No. Missing prices', 'No. Missing volumes', 'No. Negative Values', 'Outliers']
 # cleaning_stats_df = pd.DataFrame(columns = columns_lst)
 cleaning_stats_df_lst = []
 stock_df_lst = []
-k = 1
+k = 1.5
 
 #For each data set...
 for letter in [*string.ascii_uppercase][:4]:
@@ -25,15 +25,15 @@ for letter in [*string.ascii_uppercase][:4]:
     stock_letter_df_unclean_length = len(stock_letter_df_unclean)
 
     #df of cleaning stats for current dataset
-    stock_letter_data_cleaning_stats_df = pd.DataFrame(columns=columns_lst)
-    stock_letter_data_cleaning_stats_df['Dataset'] = list(letter)
+    data = [letter, stock_letter_df_unclean_length] + [0] * (len(columns_lst) - 2)
+    stock_letter_data_cleaning_stats_df = pd.DataFrame([data], columns=columns_lst)    
 
     #Drop duplicate rows and count duplicates
     stock_letter_df_unclean = stock_letter_df_unclean.drop_duplicates(ignore_index = True)
     stock_letter_data_cleaning_stats_df['No. repeated rows'] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
 
     #Count Missing values
-    i = 2
+    i = 3
     for column in stock_letter_df_unclean.columns:
         key = columns_lst[i]
         stock_letter_data_cleaning_stats_df[key] = stock_letter_df_unclean[column].isnull().sum()
@@ -52,7 +52,11 @@ for letter in [*string.ascii_uppercase][:4]:
         #Count outliers
         IQR = stats.iqr(stock_letter_df_unclean[column_])
         lower_bound = stats.quantile(stock_letter_df_unclean[column_], p=0.25) - (k * IQR)
+        if lower_bound < 0:
+            lower_bound = 0
+
         upper_bound = stats.quantile(stock_letter_df_unclean[column_], p=0.75) + (k * IQR)
+
         stock_letter_data_cleaning_stats_df['Outliers'] += sum(n < lower_bound for n in stock_letter_df_unclean[column_].values.flatten())
         stock_letter_data_cleaning_stats_df['Outliers'] += sum(n > upper_bound for n in stock_letter_df_unclean[column_].values.flatten())
 

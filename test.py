@@ -2,7 +2,14 @@
 Test
 '''
 
-import string
+import pandas as pd
 
-lst_ = [*string.ascii_uppercase][:4]
-print(lst_)
+columns_lst = ['Dataset', 'No. repeated rows', 'No. Missing time stamps', 'No. Missing prices', 'No. Missing volumes', 'No. Negative Values', 'Outliers']
+
+df = pd.DataFrame(columns = columns_lst)
+
+print(df)
+
+df['Dataset'] = ['A']
+
+print(df)

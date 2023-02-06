@@ -44,12 +44,10 @@ for letter in [*string.ascii_uppercase][:4]:
 
     #Count and remove Negative values as well as outliers using the k*IQR method where k is a parameter of user choice
     for column_ in stock_letter_df_unclean.columns[1:]:
-        print(stock_letter_df_unclean.describe())
         #Count negative values
         stock_letter_data_cleaning_stats_df['No. Negative Values'] += sum(n < 0 for n in stock_letter_df_unclean[column_].values.flatten())
         #Remove negative values
         stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] < 0].index, inplace = True)
-        print(stock_letter_df_unclean.describe())
 
         #Count outliers
         IQR = stats.iqr(stock_letter_df_unclean[column_])

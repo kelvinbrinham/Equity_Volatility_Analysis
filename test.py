@@ -2,11 +2,19 @@
 Test
 '''
 
+from datetime import datetime
+import datetime as dt
+import numpy as np
 
-def sos(x):
-    return sum([y ** 2 for y in x])
+x = dt.datetime(2016,4,30,15,20,6)
 
+def market_hours(x):
+    opening_time = dt.time(8,00,00)
+    closing_time = dt.time(16,30,00)
+    if x.time() > opening_time and x.time() < closing_time:
+        return x
 
-lst = [1, 3, 5]
+    else:
+        return np.nan
 
-print(sos(lst))
+print(market_hours(x))

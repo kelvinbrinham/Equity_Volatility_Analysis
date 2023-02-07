@@ -16,10 +16,22 @@ cleaning_stats_df_lst = []
 stock_df_lst = []
 k = 1.5
 
+
+def market_hours(x):
+    opening_time = dt.time(8, 00, 00)
+    closing_time = dt.time(16, 30, 00)
+    if x.time() > opening_time and x.time() < closing_time:
+        return x
+
+    else:
+        return np.nan
+
+
+
 #For each data set...
 # for letter in [*string.ascii_uppercase][:4]:
 for letter in [*string.ascii_uppercase][:1]:
-    filename = f'data/stock_{"B"}.csv'
+    filename = f'data/stock_{letter}.csv'
 
     #Import raw data
     stock_letter_df_unclean = pd.read_csv(filename)
@@ -70,13 +82,18 @@ for letter in [*string.ascii_uppercase][:1]:
     stock_letter_df_unclean['ts'] = pd.to_datetime(stock_letter_df_unclean['ts'])
     # stock_letter_df_unclean.index = pd.to_datetime(stock_letter_df_unclean.index)
 
+
     #Ensure df is time ordered
     if not stock_letter_df_unclean.equals(stock_letter_df_unclean.sort_values(by = ['ts'])):
         print('Raw data not in ascending time series')
         stock_letter_df_unclean = stock_letter_df_unclean.sort_values(by = ['ts'])
 
-
-    stock_letter_df_clean = stock_letter_df_unclean
+    stock_letter_df_unclean['ts'] = stock_letter_df_unclean['ts'].apply(market_hours)
+    stock_letter_df_clean = stock_letter_df_unclean.dropna()
+    
+    stock_letter_data_cleaning_stats_df['Out of market hours'] = len(stock_letter_df_unclean) - len(stock_letter_df_clean)
+    stock_letter_data_cleaning_stats_df['Clean size'] = len(stock_letter_df_clean)
+   
 
     #Add cleaning stats to list
     cleaning_stats_df_lst.append(stock_letter_data_cleaning_stats_df)
@@ -88,5 +105,4 @@ for letter in [*string.ascii_uppercase][:1]:
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis=0, ignore_index=True)
 
 
-# print(cleaning_stats_df)
 

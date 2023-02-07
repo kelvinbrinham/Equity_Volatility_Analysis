@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import json as js
 import datetime as dt
+from datetime import datetime
 import matplotlib.pyplot as plt
 import string
 import stats
@@ -26,11 +27,9 @@ stock_A_df_clean = stock_df_lst_clean[0]
 # stock_A_df_clean[numeric_columns] = stock_A_df_clean[numeric_columns].apply(sp.stats.zscore)
 stock_A_df = stock_A_df_clean
 
-# plt.figure()
-# stock_A_df.price.diff().dropna().plot(title = 'price')
-# # stock_A_df.volume.plot(title = 'volume')
-# plt.grid()
-# plt.show()
+print(stock_A_df['ts'][0])
+print(datetime.strptime(stock_A_df['ts'][0]))#, "%m/%d/%y %H:%M:%S"))
+
 
 
 

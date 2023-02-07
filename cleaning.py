@@ -17,7 +17,8 @@ stock_df_lst = []
 k = 1.5
 
 #For each data set...
-for letter in [*string.ascii_uppercase][:4]:
+# for letter in [*string.ascii_uppercase][:4]:
+for letter in [*string.ascii_uppercase][:1]:
     filename = f'data/stock_{letter}.csv'
 
     #Import raw data

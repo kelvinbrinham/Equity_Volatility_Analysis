@@ -21,7 +21,8 @@ from cleaning import stock_df_lst as stock_df_lst_clean
 stock_df_processed_lst = []
 
 #Normalize data 
-for i in range(len(stock_df_lst_clean)):
+# for i in range(len(stock_df_lst_clean)):
+for i in range(1):
 
     stock_letter_df_clean = stock_df_lst_clean[i]
     # print(stock_A_df_clean.describe())
@@ -37,10 +38,10 @@ for i in range(len(stock_df_lst_clean)):
 
 
     stock_letter_df_processing = stock_letter_df_processing.resample('s').mean()
-    stock_letter_df_interpolated = stock_letter_df_processing.interpolate()
-    stock_letter_df_resample = stock_letter_df_interpolated.resample('1min').asfreq()
+    stock_letter_df_interpolated = stock_letter_df_processing.interpolate(limit_direction = 'both')
+    stock_letter_df_resample = stock_letter_df_interpolated.resample('1min').asfreq().dropna()
 
-
+    stock_df_processed_lst.append(stock_letter_df_resample)
 
 
 

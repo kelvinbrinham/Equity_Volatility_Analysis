@@ -43,10 +43,14 @@ for i in range(1):
     stock_letter_df_resample = stock_letter_df_interpolated.resample('1min').asfreq().dropna()
 
     stock_letter_df_resample['Market Hours'] = pd.to_datetime(stock_letter_df_resample.index)
+    stock_letter_df_resample['Market Hours'] = stock_letter_df_resample['Market Hours'].apply(market_hours)
+    stock_letter_df_resample = stock_letter_df_resample.dropna()
 
 
     stock_df_processed_lst.append(stock_letter_df_resample)
 
-print(stock_df_processed_lst[0])
+
+
+
 
 

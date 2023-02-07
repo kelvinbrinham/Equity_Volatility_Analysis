@@ -25,21 +25,19 @@ stock_A_df = stock_A_df.dropna()
 
 
 def RealisedVolatility(x):
-    return (1 / 510) * np.sqrt(sum([y ** 2 for y in x]))
+    return (1 / 30) * np.sqrt(sum([y ** 2 for y in x]))
 
 
 #Calculate 1-day RV (relative vortility)
-stock_A_df['10-Minute Relative Vortility'] = stock_A_df['1-Minute Return [%]'].rolling(510).apply(RealisedVolatility)
+stock_A_df['10-Minute Relative Vortility'] = stock_A_df['1-Minute Return [%]'].rolling(30).apply(RealisedVolatility)
 stock_A_df = stock_A_df.dropna()
 
 #Define trading year as 252 days, each with market hours 08:00 - 16:30, i.e. 8.5 hours
-stock_A_df['10-Minute Relative Vortility (Annualised)'] = stock_A_df['10-Minute Relative Vortility'] * np.sqrt((252 * 8.5 * 60 ) / 510)
+stock_A_df['10-Minute Relative Vortility (Annualised)'] = stock_A_df['10-Minute Relative Vortility'] * np.sqrt((252 * 8.5 * 60 ) / 30)
 
 
 
-
-
-print(stock_A_df.head())
-print(stock_A_df.tail())
+stock_A_df['10-Minute Relative Vortility (Annualised)'].plot()
+plt.show()
 
 

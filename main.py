@@ -36,9 +36,10 @@ stock_A_df = stock_A_df.dropna()
 stock_A_df['10-Minute Relative Vortility (Annualised)'] = stock_A_df['10-Minute Relative Vortility'] * np.sqrt((252 * 8.5 * 60 ) / 510)
 
 
-print(stock_A_df.head())
 
-stock_A_df['10-Minute Relative Vortility (Annualised)'].plot()
-plt.show()
+
+
+print(stock_A_df.head())
+print(stock_A_df.tail())
 
 

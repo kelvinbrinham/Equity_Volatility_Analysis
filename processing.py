@@ -17,6 +17,7 @@ import scipy as sp
 
 from cleaning import cleaning_stats_df
 from cleaning import stock_df_lst as stock_df_lst_clean
+from cleaning import market_hours
 
 stock_df_processed_lst = []
 
@@ -41,7 +42,11 @@ for i in range(1):
     stock_letter_df_interpolated = stock_letter_df_processing.interpolate(limit_direction = 'both')
     stock_letter_df_resample = stock_letter_df_interpolated.resample('1min').asfreq().dropna()
 
+    stock_letter_df_resample['Market Hours'] = pd.to_datetime(stock_letter_df_resample.index)
+
+
     stock_df_processed_lst.append(stock_letter_df_resample)
 
+print(stock_df_processed_lst[0])
 
 

@@ -22,7 +22,7 @@ stock_A_df = stock_df_lst[0]
 # df_hist.hist(figsize=(5, 5), bins = 20)
 # plt.show()
 
-# plt.plot(stock_A_df['ts'][0::20], stock_A_df['price'][0::20])
-# # plt.plot(stock_A_df['ts'], stock_A_df['volume'])
-# plt.show()
+plt.plot(stock_A_df['ts'][0::40][1:], stock_A_df['price'][0::40].diff().dropna())#, '.', markersize = 1)
+# plt.plot(stock_A_df['ts'], stock_A_df['volume'])
+plt.show()
 

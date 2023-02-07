@@ -64,6 +64,11 @@ for letter in [*string.ascii_uppercase][:4]:
         stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] < lower_bound].index)
         stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean[column_] > upper_bound].index)
 
+    #Ensure df is time ordered
+    if not stock_letter_df_unclean.equals(stock_letter_df_unclean.sort_values(by = ['ts'])):
+        print('Raw data not in ascending time series')
+        stock_letter_df_unclean = stock_letter_df_unclean.sort_values(by = ['ts'])
+
     stock_letter_df_clean = stock_letter_df_unclean
 
     #Add cleaning stats to list

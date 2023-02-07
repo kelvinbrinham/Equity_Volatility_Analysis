@@ -16,7 +16,8 @@ from processing import stock_df_processed_lst as stock_df_lst
 #Calculate 1-day return using the resampled data
 stock_A_df = stock_df_lst[0]
 
-stock_A_df['1-Minute Return'] = stock_A_df.shift(1)['price'] - stock_A_df['price']
+stock_A_df['1-Minute Return [%]'] = stock_A_df.shift(1)['price'] - stock_A_df['price']
+stock_A_df['1-Minute Return [%]'] = stock_A_df['1-Minute Return [%]'] / stock_A_df['price']
 #Drop duplicates (Non buisness days)
 stock_A_df = stock_A_df.drop_duplicates(subset='1-Minute Return')
 #Drop empty rows (First row)
@@ -31,10 +32,10 @@ def RealisedVolatility(x):
 stock_A_df['10-Minute Relative Vortility'] = stock_A_df['1-Minute Return'].rolling(10).apply(RealisedVolatility)
 stock_A_df = stock_A_df.dropna()
 
-#Define trading year as 252 days, each with 
-# stock_A_df['10-Minute Relative Vortility (Annualised)'] = stock_A_df['10-Minute Relative Vortility'] * np.sqrt(252/)
+#Define trading year as 252 days, each with market hours 08:00 - 16:30, i.e. 8.5 hours
+stock_A_df['10-Minute Relative Vortility (Annualised)'] = stock_A_df['10-Minute Relative Vortility'] * np.sqrt((252 * 8.5 * 60 ) / 10)
 
-print(stock_A_df[:1100])
+print(stock_A_df.head())
 # plt.figure()
 # stock_A_df['30-Minute Relative Vortility'].plot()
 # plt.show()

@@ -19,7 +19,7 @@ k = 1.5
 #For each data set...
 # for letter in [*string.ascii_uppercase][:4]:
 for letter in [*string.ascii_uppercase][:1]:
-    filename = f'data/stock_{letter}.csv'
+    filename = f'data/stock_{"B"}.csv'
 
     #Import raw data
     stock_letter_df_unclean = pd.read_csv(filename)

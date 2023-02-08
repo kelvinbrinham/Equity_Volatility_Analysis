@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import string
 import stats
 
-from processing import stock_df_processed_lst as stock_df_lst
+from processing_interpolate import stock_df_processed_lst as stock_df_lst
 
 
 

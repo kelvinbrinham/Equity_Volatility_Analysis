@@ -1,5 +1,5 @@
 '''
-Processing
+Processing using linear interpolation
 '''
 
 

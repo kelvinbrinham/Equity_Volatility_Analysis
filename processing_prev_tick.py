@@ -64,6 +64,5 @@ for i in range(1):
     #Resample only each 30-minute period
     # stock_letter_df_resample = stock_letter_df_resample.resample('30min').ffill()
 
-    stock_letter_df_resample['30-minute rolling realised volatility)'].plot()
-    plt.show()
+    print(stock_letter_df_resample[:100])
 

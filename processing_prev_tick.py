@@ -24,6 +24,12 @@ from cleaning import market_hours
 def RealisedVolatility(x):
     return np.sqrt(sum([y ** 2 for y in x]))
 
+def is_5_minutes(x):
+    if x.total_seconds() == 300:
+        return x
+    else:
+        return np.nan
+
 stock_df_processed_lst = []
 
 
@@ -58,22 +64,34 @@ for i in range(1):
 
     #Calculate 5-minute return (just difference in price between rows because i have spaced the data on 5 minute intervals)
     stock_letter_df_resample['5-Minute (log) Return'] = np.log(stock_letter_df_resample['price'] / stock_letter_df_resample.shift(1)['price'])
-    stock_letter_df_resample = stock_letter_df_resample.dropna()
+    # stock_letter_df_resample = stock_letter_df_resample.dropna()
     # stock_letter_df_resample['5-Minute (log) Return'][0] = stock_letter_df_resample['5-Minute (log) Return'][1:6].mean()
 
     #Drop duplicate returns (non buisness days)
     stock_letter_df_resample = stock_letter_df_resample.drop_duplicates(subset = '5-Minute (log) Return')
-    # stock_letter_df_resample.to_excel('data/5_minute.xlsx')
+
+    #Drop returns that span > 5-minutes (i.e. returns overnight)
+    stock_letter_df_resample['Time Difference'] = pd.to_datetime(stock_letter_df_resample.index)
+    stock_letter_df_resample['Time Difference'] = stock_letter_df_resample['Time Difference'] - stock_letter_df_resample['Time Difference'].shift()
+    stock_letter_df_resample.to_excel('data/5_minute.xlsx')
+    stock_letter_df_resample['Time Difference'] = stock_letter_df_resample['Time Difference'].apply(is_5_minutes)
+    stock_letter_df_resample.to_excel('data/5_minute_2.xlsx')
+
+    break
 
     #Calculate 30-minute realised volatility using the square sum of 5-minute returns for each 30 minute period
     stock_letter_df_resample['30-minute rolling realised volatility'] = stock_letter_df_resample['5-Minute (log) Return'].rolling(6).apply(RealisedVolatility)
-    # stock_letter_df_resample = stock_letter_df_resample.dropna()
+    stock_letter_df_resample = stock_letter_df_resample.dropna()
     print(stock_letter_df_resample[:20])
 
 
     #Resample only each 30-minute period
     stock_letter_df_resample = stock_letter_df_resample.resample('30min').ffill()
-    # stock_letter_df_resample = stock_letter_df_resample.drop_duplicates(subset = '30-minute rolling realised volatility')
+    stock_letter_df_resample = stock_letter_df_resample.drop_duplicates(subset = '30-minute rolling realised volatility')
+    print(stock_letter_df_resample[:20])
+
+
+
 
    
 

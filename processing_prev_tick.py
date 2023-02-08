@@ -27,14 +27,21 @@ stock_df_processed_lst = []
 for i in range(1):
     stock_letter_df_clean = stock_df_lst_clean[i]
 
+    #Set timestamp as index
     stock_letter_df_processing = stock_letter_df_clean.set_index('ts')
+    #Resample on 5 minute periods using previous tick method
+    # stock_letter_df_resample = stock_letter_df_processing.resample('5min').ffill().dropna()
+    stock_letter_df_resample = stock_letter_df_processing.resample('5min').agg({'price': np.maximum, 'volume': np.sum})
+    print(stock_letter_df_resample.head())
 
-    print(stock_letter_df_processing.head())
+    #Remove entries outside market hours 08:00 - 16:30
+    stock_letter_df_resample['Market Hours'] = pd.to_datetime(stock_letter_df_resample.index)
+    stock_letter_df_resample['Market Hours'] = stock_letter_df_resample['Market Hours'].apply(market_hours)
+    stock_letter_df_resample = stock_letter_df_resample.dropna()
 
-    stock_letter_df_processing = stock_letter_df_processing.resample('5min').ffill()
-
-    print(stock_letter_df_processing.head())
-
-
+    #Drop market hours column
+    stock_letter_df_resample = stock_letter_df_resample.drop(['Market Hours'], axis=1)
+    stock_df_processed_lst.append(stock_letter_df_resample)
 
 
+print(stock_df_processed_lst[0].head())

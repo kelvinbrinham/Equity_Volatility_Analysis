@@ -34,8 +34,8 @@ for i in range(1):
 
     stock_letter_df_processing = stock_letter_df_clean.set_index('ts')
 
-    plt.figure()
-    stock_letter_df_processing.price.plot()
+    # plt.figure()
+    # stock_letter_df_processing.price.plot()
 
 
     stock_letter_df_processing = stock_letter_df_processing.resample('s').mean()

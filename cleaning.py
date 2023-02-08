@@ -20,7 +20,7 @@ k = 1.5
 def market_hours(x):
     opening_time = dt.time(8, 00, 00)
     closing_time = dt.time(16, 30, 00)
-    if x.time() > opening_time and x.time() < closing_time:
+    if x.time() >= opening_time and x.time() <= closing_time:
         return x
 
     else:
@@ -42,7 +42,7 @@ for letter in [*string.ascii_uppercase][:1]:
     stock_letter_data_cleaning_stats_df = pd.DataFrame([data], columns=columns_lst)    
 
     #Drop duplicate rows and count duplicates
-    stock_letter_df_unclean = stock_letter_df_unclean.drop_duplicates(ignore_index = True)
+    stock_letter_df_unclean = stock_letter_df_unclean.drop_duplicates(subset = ['ts'], ignore_index = True)
     stock_letter_data_cleaning_stats_df['No. repeated rows'] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
 
     #Count Missing values
@@ -80,6 +80,7 @@ for letter in [*string.ascii_uppercase][:1]:
 
     #Turn timestamp strings into datetime objects
     stock_letter_df_unclean['ts'] = pd.to_datetime(stock_letter_df_unclean['ts'])
+
     # stock_letter_df_unclean.index = pd.to_datetime(stock_letter_df_unclean.index)
 
 
@@ -105,4 +106,4 @@ for letter in [*string.ascii_uppercase][:1]:
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis=0, ignore_index=True)
 
 
-
+stock_df_lst[0].to_excel('testing.xlsx')

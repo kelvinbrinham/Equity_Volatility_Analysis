@@ -73,22 +73,21 @@ for i in range(1):
     #Drop returns that span > 5-minutes (i.e. returns overnight)
     stock_letter_df_resample['Time Difference'] = pd.to_datetime(stock_letter_df_resample.index)
     stock_letter_df_resample['Time Difference'] = stock_letter_df_resample['Time Difference'] - stock_letter_df_resample['Time Difference'].shift()
-    stock_letter_df_resample.to_excel('data/5_minute.xlsx')
     stock_letter_df_resample['Time Difference'] = stock_letter_df_resample['Time Difference'].apply(is_5_minutes)
-    stock_letter_df_resample.to_excel('data/5_minute_2.xlsx')
 
-    break
 
     #Calculate 30-minute realised volatility using the square sum of 5-minute returns for each 30 minute period
     stock_letter_df_resample['30-minute rolling realised volatility'] = stock_letter_df_resample['5-Minute (log) Return'].rolling(6).apply(RealisedVolatility)
     stock_letter_df_resample = stock_letter_df_resample.dropna()
-    print(stock_letter_df_resample[:20])
-
+    stock_letter_df_resample = stock_letter_df_resample.drop(columns = ['Time Difference'])
+    print(stock_letter_df_resample[80:100])
+    break
 
     #Resample only each 30-minute period
     stock_letter_df_resample = stock_letter_df_resample.resample('30min').ffill()
     stock_letter_df_resample = stock_letter_df_resample.drop_duplicates(subset = '30-minute rolling realised volatility')
-    print(stock_letter_df_resample[:20])
+    
+
 
 
 

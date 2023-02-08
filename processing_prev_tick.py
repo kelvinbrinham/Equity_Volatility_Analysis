@@ -22,6 +22,18 @@ from cleaning import market_hours
 stock_df_processed_lst = []
 
 
+#Equally space data using previous tick method, i will use 5 minute data
+# for i in range(len(stock_df_lst_clean)):
+for i in range(1):
+    stock_letter_df_clean = stock_df_lst_clean[i]
+
+    stock_letter_df_processing = stock_letter_df_clean.set_index('ts')
+
+    print(stock_letter_df_processing.head())
+
+    stock_letter_df_processing = stock_letter_df_processing.resample('5min').ffill()
+
+    print(stock_letter_df_processing.head())
 
 
 

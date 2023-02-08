@@ -19,6 +19,9 @@ from cleaning import cleaning_stats_df
 from cleaning import stock_df_lst as stock_df_lst_clean
 from cleaning import market_hours
 
+def RealisedVolatility(x):
+    return (1 / 30) * np.sqrt(sum([y ** 2 for y in x]))
+
 stock_df_processed_lst = []
 
 
@@ -37,10 +40,12 @@ for i in range(1):
     stock_letter_df_price_resample = stock_letter_df_processing[['price']].resample('5min').ffill()
     stock_letter_df_price_resample['price'][0] = first_value
 
-    # stock_letter_df_volume_resample = stock_letter_df_processing[['volume']].resample('5min', label='right', closed='right').sum()
-    stock_letter_df_volume_resample = stock_letter_df_processing[['volume']].resample('5min').sum()
+    #2. Resample volume by summing volume for each 5 min period. First value just takes first value as before
+    stock_letter_df_volume_resample = stock_letter_df_processing[['volume']].resample('5min', label='right', closed='right').sum()
+    
+    stock_letter_df_resample = pd.concat([stock_letter_df_price_resample, stock_letter_df_volume_resample], axis = 1)
 
-    #Remove entries outside market hours 08:00 - 16:30
+    #Remove entries outside market hours 08:00 - 16:00
     stock_letter_df_resample['Market Hours'] = pd.to_datetime(stock_letter_df_resample.index)
     stock_letter_df_resample['Market Hours'] = stock_letter_df_resample['Market Hours'].apply(market_hours)
     stock_letter_df_resample = stock_letter_df_resample.dropna()
@@ -49,5 +54,16 @@ for i in range(1):
     stock_letter_df_resample = stock_letter_df_resample.drop(['Market Hours'], axis=1)
     stock_df_processed_lst.append(stock_letter_df_resample)
 
+    #Calculate 5-minute return (just difference in price between rows because i have spaced the data on 5 minute intervals)
+    stock_letter_df_resample['5-Minute (log) Return'] = np.log(stock_letter_df_resample['price'] / stock_letter_df_resample.shift(1)['price'])
 
-# print(stock_df_processed_lst[0].head())
+    #Calculate 30-minute realised volatility using the square sum of 5-minute returns for each 30 minute period
+    stock_letter_df_resample['30-minute rolling realised volatility)'] = stock_letter_df_resample['5-Minute (log) Return'].rolling(6).apply(RealisedVolatility)
+    stock_letter_df_resample = stock_letter_df_resample.dropna()
+
+    #Resample only each 30-minute period
+    # stock_letter_df_resample = stock_letter_df_resample.resample('30min').ffill()
+
+    stock_letter_df_resample['30-minute rolling realised volatility)'].plot()
+    plt.show()
+

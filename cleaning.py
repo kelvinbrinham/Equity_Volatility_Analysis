@@ -19,7 +19,7 @@ k = 1.5
 
 def market_hours(x):
     opening_time = dt.time(8, 00, 00)
-    closing_time = dt.time(16, 30, 00)
+    closing_time = dt.time(16, 00, 00)
     if x.time() >= opening_time and x.time() <= closing_time:
         return x
 
@@ -106,4 +106,4 @@ for letter in [*string.ascii_uppercase][:1]:
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis=0, ignore_index=True)
 
 
-stock_df_lst[0].to_excel('testing.xlsx')
+# stock_df_lst[0].to_excel('data/testing.xlsx')

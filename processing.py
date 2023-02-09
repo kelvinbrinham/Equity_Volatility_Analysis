@@ -33,7 +33,7 @@ def Same_day(x):
 stock_df_processed_lst = []
 
 # for i in range(len(stock_df_lst_clean)):
-for i in range(3,4):
+for i in range(1):
     stock_letter_df_clean = stock_df_lst_clean[i]
     stock_letter_df_chunked_lst = []
 
@@ -97,15 +97,22 @@ for i in range(3,4):
         #---
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
+        #Fixing missing 8:30 values in 4 of the days for stock C. I filled the volume and RV with the mean of the remaining days values.
         if len(stock_letter_df_chunk_resample) != 15:
-            print('FUCK')
-        
+            df_ = stock_letter_df_chunk_resample.reset_index()
+            new_first_line = pd.DataFrame([[df_['ts'][0] - timedelta(minutes = 30), df_['volume'].mean(), df_['30-minute RV'].mean()]], columns = df_.columns)
+            df_ = pd.concat([new_first_line, df_])
+            stock_letter_df_chunk_resample = df_.set_index('ts')
 
+            
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
+
+    print(stock_data_processed_df)
+
     stock_df_processed_lst.append(stock_data_processed_df)
 
-# print(stock_df_processed_lst[0])
-# stock_df_processed_lst[0].to_excel('data/TEST.xlsx')
+
+
 
 
 print('END')

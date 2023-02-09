@@ -119,14 +119,8 @@ for i in range(4):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
-stock_D_df = stock_df_processed_lst[3]
-stock_D_df.to_excel('data/T.xlsx')
-
-print(stock_D_df.corr(method = 'pearson'))
 
 
-
-
-print('END')
+# print('END')
 
 

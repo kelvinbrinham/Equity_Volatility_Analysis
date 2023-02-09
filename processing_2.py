@@ -17,8 +17,8 @@ from cleaning_2 import stock_df_lst
 #List of chunked data
 stock_df_processed_lst = []
 
-# for i in range(len(stock_df_lst)):
-for i in range(1):
+for i in range(len(stock_df_lst)):
+# for i in range(1):
     #stock df from cleaning.py
     stock_letter_df = stock_df_lst[i]
 
@@ -97,11 +97,26 @@ for i in range(1):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
-stock_A_df = stock_df_processed_lst[0]
-stock_A_df = stock_A_df.apply(sp.stats.zscore)
-stock_A_df.to_excel('data/WHATEVER.xlsx')
 
-# plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.', markersize = 0.8)
-# plt.show()
+stock_A_df = stock_df_processed_lst[3]
+stock_A_df = stock_A_df.apply(sp.stats.zscore)
+
+print(len(stock_A_df))
+
+stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
+stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
+
+print(len(stock_A_df))
+
+
+# stock_A_df.to_excel('data/WHATEVER.xlsx')
+
+plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.', markersize = 0.8)
+
+a, b = np.polyfit(stock_A_df['volume'], stock_A_df['30-minute RV'], 1)
+plt.plot(stock_A_df['volume'], a * stock_A_df['volume'] + b)
+
+
+print(stock_A_df.corr(method = 'pearson'))
 
 print('END')

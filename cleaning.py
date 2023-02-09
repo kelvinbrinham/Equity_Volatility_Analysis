@@ -30,7 +30,7 @@ def market_hours(x):
 
 #For each data set...
 # for letter in [*string.ascii_uppercase][:4]:
-for letter in [*string.ascii_uppercase][:4]:
+for letter in [*string.ascii_uppercase][:1]:
     filename = f'data/stock_{letter}.csv'
 
     #Import raw data

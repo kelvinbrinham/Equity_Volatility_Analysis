@@ -22,8 +22,14 @@ from processing import stock_df_processed_lst
 #     stock_corr_df_lst.append(stock_letter_corr_df['30-minute RV'][0])
 
 stock_A_df = stock_df_processed_lst[0]
+stock_A_df = stock_A_df.apply(sp.stats.zscore)
 
-print(stock_A_df[:20])
+# print(stock_A_df[:20])
+
+plt.figure()
+plt.plot(stock_A_df['Prior Day Rolling Average Trading Volume'], stock_A_df['Prior Day Rolling Average RV'], '.', markersize = 0.8)
+plt.show()
+# print(stock_A_df.corr(method = 'pearson'))
 
 
 

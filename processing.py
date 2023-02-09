@@ -107,7 +107,14 @@ for i in range(1):
             
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
 
-    print(stock_data_processed_df)
+    #Calculate prior day rolling average volatility 
+    stock_data_processed_df['Prior Day Rolling Average Trading Volume'] = stock_data_processed_df['volume'].rolling(15).mean()
+
+    stock_data_processed_df['Prior Day Rolling Average RV'] = stock_data_processed_df['30-minute RV'].rolling(15).mean()
+
+
+    stock_data_processed_df = stock_data_processed_df.dropna()
+
 
     stock_df_processed_lst.append(stock_data_processed_df)
 

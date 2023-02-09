@@ -97,13 +97,15 @@ for i in range(3,4):
         #---
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
+        if len(stock_letter_df_chunk_resample) != 15:
+            print('FUCK')
         
 
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
     stock_df_processed_lst.append(stock_data_processed_df)
 
-print(stock_df_processed_lst[0])
-stock_df_processed_lst[0].to_excel('data/TESTER.xlsx')
+# print(stock_df_processed_lst[0])
+# stock_df_processed_lst[0].to_excel('data/TEST.xlsx')
 
 
 print('END')

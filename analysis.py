@@ -26,8 +26,11 @@ from processing import stock_df_processed_lst
 
 stock_A_df = stock_df_processed_lst[0]
 
+stock_A_df = stock_A_df.apply(sp.stats.zscore)
+# stock_A_df['30-minute RV z-score'] = stock_A_df['30-minute RV'].apply(sp.stats.zscore)
+
 plt.figure()
-plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.')
+plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.', markersize = 0.8)
 plt.show()
 
 print(stock_A_df.head())

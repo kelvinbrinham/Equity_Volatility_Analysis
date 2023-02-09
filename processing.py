@@ -33,7 +33,7 @@ def Same_day(x):
 stock_df_processed_lst = []
 
 # for i in range(len(stock_df_lst_clean)):
-for i in range(1):
+for i in range(4):
     stock_letter_df_clean = stock_df_lst_clean[i]
     stock_letter_df_chunked_lst = []
 

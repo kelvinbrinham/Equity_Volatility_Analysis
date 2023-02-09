@@ -9,6 +9,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import string
 import stats
+import scipy as sp
 
 columns_lst = ['Dataset', 'Unclean size', 'No. repeated rows', 'No. Missing time stamps', 'No. Missing prices', 'No. Missing volumes', 'No. Negative Values', 'Outliers']
 # cleaning_stats_df = pd.DataFrame(columns = columns_lst)
@@ -35,6 +36,22 @@ for letter in [*string.ascii_uppercase][:4]:
 
     #Import raw data
     stock_letter_df_unclean = pd.read_csv(filename)
+
+    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    # print('1')
+    # stock_letter_df_unclean = stock_letter_df_unclean.set_index('ts')
+    # stock_letter_df_unclean = stock_letter_df_unclean.dropna()
+    # stock_letter_df_unclean = stock_letter_df_unclean.apply(sp.stats.zscore)
+    # stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean['price'] < -3].index)
+    # stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean['price'] > 3].index)
+    # stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean['volume'] > 3].index)
+    # stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean['volume'] > 3].index)
+    # print('2')
+    # print(stock_letter_df_unclean.corr(method = 'pearson'))
+    
+    # break
+    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
     stock_letter_df_unclean_length = len(stock_letter_df_unclean)
 
     #df of cleaning stats for current dataset
@@ -102,7 +119,7 @@ for letter in [*string.ascii_uppercase][:4]:
     #Add cleaned data to one list
     stock_df_lst.append(stock_letter_df_clean)
 
-
+print('END')
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis=0, ignore_index=True)
 
 

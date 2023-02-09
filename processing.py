@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import json as js
 # import datetime as dt
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import string
 import stats
@@ -33,7 +33,7 @@ def Same_day(x):
 stock_df_processed_lst = []
 
 # for i in range(len(stock_df_lst_clean)):
-for i in range(1):
+for i in range(3,4):
     stock_letter_df_clean = stock_df_lst_clean[i]
     stock_letter_df_chunked_lst = []
 
@@ -97,10 +97,15 @@ for i in range(1):
         #---
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
+        
 
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
     stock_df_processed_lst.append(stock_data_processed_df)
 
-    
+print(stock_df_processed_lst[0])
+stock_df_processed_lst[0].to_excel('data/TESTER.xlsx')
+
+
+print('END')
 
 

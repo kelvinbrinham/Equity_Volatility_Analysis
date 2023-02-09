@@ -101,15 +101,6 @@ for i in range(1):
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
     stock_df_processed_lst.append(stock_data_processed_df)
 
-    print(stock_data_processed_df.head())
-
-    stock_data_processed_df['volume'].plot()
-    plt.show()
     
 
 
-    
-
-
-
-print('END')

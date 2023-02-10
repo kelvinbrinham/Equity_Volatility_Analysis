@@ -106,8 +106,8 @@ for i in range(4):
     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV < -3].index)
     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV > 3].index)
 
-    stock_A_df.RV = stock_A_df.RV.shift(3)
-    stock_A_df = stock_A_df.dropna()
+    # stock_A_df.RV = stock_A_df.RV.shift(1)
+    # stock_A_df = stock_A_df.dropna()
 
 
     # plt.figure()
@@ -116,16 +116,10 @@ for i in range(4):
     # a, b = np.polyfit(stock_A_df.volume, stock_A_df.RV, 1)
     # plt.plot(stock_A_df.volume, a * stock_A_df.volume + b)
 
-    # plt.show()
 
-    from statsmodels.tsa.stattools import grangercausalitytests
-    # perform Granger-Causality test
-    print(grangercausalitytests(stock_A_df[['RV', 'volume']], maxlag=[1]))
-
-
-    # print(stock_A_df.corr('pearson').iloc[0,1])
-    # print(stock_A_df.corr('kendall').iloc[0,1])
-    # print(stock_A_df.corr('spearman').iloc[0,1])
+    print(stock_A_df.corr('pearson').iloc[0,1])
+    print(stock_A_df.corr('kendall').iloc[0,1])
+    print(stock_A_df.corr('spearman').iloc[0,1])
     print('--------')
 
 

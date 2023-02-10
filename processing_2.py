@@ -103,6 +103,9 @@ stock_A_df = stock_A_df.apply(sp.stats.zscore)
 
 print(len(stock_A_df))
 
+stock_A_df['volume'] = stock_A_df['volume'].shift(1)
+stock_A_df['volume'] = stock_A_df['volume'].dropna()
+
 stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
 stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
 

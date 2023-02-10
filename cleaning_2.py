@@ -45,8 +45,6 @@ for letter in [*string.ascii_uppercase][:4]:
     stock_letter_df_unclean = stock_letter_df_unclean.drop(stock_letter_df_unclean[stock_letter_df_unclean['volume'] < 0].index)
     
 
-        
-
     #Convert times into datetime objects
     stock_letter_df_unclean['ts'] = pd.to_datetime(stock_letter_df_unclean['ts'])
 

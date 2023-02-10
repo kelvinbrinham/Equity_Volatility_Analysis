@@ -2,6 +2,7 @@
 Processing 2
 '''
 
+from statsmodels.tsa.stattools import grangercausalitytests
 import numpy as np
 import pandas as pd
 import json as js
@@ -17,8 +18,10 @@ from cleaning_2 import stock_df_lst
 #List of chunked data
 stock_df_processed_lst = []
 
-for i in range(len(stock_df_lst)):
-# for i in range(1):
+
+
+# for i in range(len(stock_df_lst)):
+for i in range(4):
     #stock df from cleaning.py
     stock_letter_df = stock_df_lst[i]
 
@@ -73,7 +76,7 @@ for i in range(len(stock_df_lst)):
         stock_letter_df_chunk_resample['5-Minute (log) Return'][0] = np.mean(stock_letter_df_chunk_resample['5-Minute (log) Return'][1:6])
         
         #5. Calc. 30-minute realised volatility
-        stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['5-Minute (log) Return'].rolling(6).apply(functions.realised_volatility)
+        stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['5-Minute (log) Return'].rolling(6 * 17).apply(functions.realised_volatility)
         stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['30-minute rolling realised volatility'].shift()
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.resample('30min').ffill()
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(columns = ['5-Minute (log) Return', 'price'])
@@ -83,43 +86,46 @@ for i in range(len(stock_df_lst)):
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
 
         #Fixing missing 8:30 values in 4 of the days for stock C. I filled the volume and RV with the mean of the remaining days values.
-        if len(stock_letter_df_chunk_resample) != 15:
-            df_ = stock_letter_df_chunk_resample.reset_index()
-            new_first_line = pd.DataFrame([[df_['ts'][0] - timedelta(minutes = 30), df_['volume'].mean(), df_['30-minute RV'].mean()]], columns = df_.columns)
-            df_ = pd.concat([new_first_line, df_])
-            stock_letter_df_chunk_resample = df_.set_index('ts')
-        
+        # if len(stock_letter_df_chunk_resample) != 15:
+        #     df_ = stock_letter_df_chunk_resample.reset_index()
+        #     new_first_line = pd.DataFrame([[df_['ts'][0] - timedelta(minutes = 30), df_['volume'].mean(), df_['30-minute RV'].mean()]], columns = df_.columns)
+        #     df_ = pd.concat([new_first_line, df_])
+        #     stock_letter_df_chunk_resample = df_.set_index('ts')
     
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
-    
+    # print([len(x) for x in stock_letter_df_chunk_resampled_lst])
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
-for i in range(4):
-    stock_A_df = stock_df_processed_lst[i]
-    stock_A_df = stock_A_df.apply(sp.stats.zscore)
-
-    print(len(stock_A_df))
-
-    # stock_A_df['volume'] = stock_A_df['volume'].shift(1)
-    # stock_A_df['volume'] = stock_A_df['volume'].dropna()
-
-    stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
-    stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
-
-    print(len(stock_A_df))
 
 
-    # stock_A_df.to_excel('data/WHATEVER.xlsx')
 
-    # plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.', markersize = 0.8)
+stock_A_df = stock_df_processed_lst[0]
+stock_A_df = stock_A_df.apply(sp.stats.zscore)
+# print(stock_A_df.head())
+# print(stock_A_df.tail())
+# stock_A_df.to_excel('data/TEST.xlsx')
 
-    # a, b = np.polyfit(stock_A_df['volume'], stock_A_df['30-minute RV'], 1)
-    # plt.plot(stock_A_df['volume'], a * stock_A_df['volume'] + b)
+# print(len(stock_A_df))
 
 
-    print(stock_A_df.corr(method = 'pearson'))
+stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
+stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
+
+# print(len(stock_A_df))
+
+# stock_A_df.volume = stock_A_df.volume.shift(1)
+# stock_A_df = stock_A_df.dropna()
+
+
+# perform Granger-Causality test
+# print(grangercausalitytests(stock_A_df[['30-minute RV', 'volume']], maxlag=[3]))
+# print(grangercausalitytests(stock_A_df[['30-minute RV', 'volume']], 15))
+
+
+
+print(stock_A_df.corr(method = 'pearson'))
 
 print('END')

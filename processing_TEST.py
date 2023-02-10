@@ -2,6 +2,7 @@
 Processing
 '''
 
+import statsmodels.api as sm
 import numpy as np
 import pandas as pd
 import json as js
@@ -58,6 +59,9 @@ for i in range(4):
     for q in range(len(stock_letter_df_chunk_lst)):
         #1. Resample prices using previous tick method for price. (First value just takes first value from before)
         stock_letter_df_chunk = stock_letter_df_chunk_lst[q]
+        open_price = stock_letter_df_chunk['price'][0]
+        close_price = stock_letter_df_chunk['price'][-1]
+        daily_return = np.log(close_price / open_price)
 
 
         first_value = stock_letter_df_chunk['price'][0]
@@ -70,6 +74,11 @@ for i in range(4):
         #3. Calculate 5-minute return 
         stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
+
+        #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+        stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].shift(2)
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
+        #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
         #4. Calculate daily realised volatility using square sum of 5-miute returns
         stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
@@ -84,6 +93,8 @@ for i in range(4):
         #Formatting
         stock_letter_df_chunk_resample['RV'] = stock_letter_df_chunk_resample['Daily RV']
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(['Daily RV'], axis = 1)
+        stock_letter_df_chunk_resample['Daily Return'] = [daily_return]
+    
       
         #---
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
@@ -105,21 +116,34 @@ for i in range(4):
     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume < -3].index)
     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV < -3].index)
     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV > 3].index)
+    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] < -3].index)
+    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] > 3].index)
 
     # stock_A_df.RV = stock_A_df.RV.shift(1)
     # stock_A_df = stock_A_df.dropna()
 
+    # plt.plot(stock_A_df.volume, stock_A_df['Daily Return'], '.', markersize = 0.8)
+    # plt.show()
+    
 
-    # plt.figure()
-    # plt.plot(stock_A_df.volume, stock_A_df.RV, '.', markersize = 0.8)
+    #define predictor and response variables
+    y = stock_A_df['Daily Return']
+    x = stock_A_df.volume
 
-    # a, b = np.polyfit(stock_A_df.volume, stock_A_df.RV, 1)
-    # plt.plot(stock_A_df.volume, a * stock_A_df.volume + b)
+    #add constant to predictor variables
+    x = sm.add_constant(x)
 
+    #fit linear regression model
+    model = sm.OLS(y, x).fit()
 
-    print(stock_A_df.corr('pearson').iloc[0,1])
-    print(stock_A_df.corr('kendall').iloc[0,1])
-    print(stock_A_df.corr('spearman').iloc[0,1])
+    #view model summary
+    print(model.summary())
+
+  
+
+    # print(stock_A_df.corr('pearson'))
+    # print(stock_A_df.corr('kendall'))
+    # print(stock_A_df.corr('spearman'))
     print('--------')
 
 

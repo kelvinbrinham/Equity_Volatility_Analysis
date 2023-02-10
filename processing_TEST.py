@@ -11,22 +11,11 @@ import matplotlib.pyplot as plt
 import string
 import stats
 import scipy as sp
+import functions
 
 
-from cleaning import cleaning_stats_df
 from cleaning import stock_df_lst as stock_df_lst_clean
-from cleaning import market_hours
 
-
-def RealisedVolatility(x):
-    return np.sqrt(sum([y ** 2 for y in x]))
-
-def Same_day(x):
-    if not x:
-        return np.nan
-
-    else:
-        return 1
 
 
 #List of chunked data
@@ -47,7 +36,7 @@ for i in range(4):
 
     #Chunk dataframe into dataframes for each day
     stock_letter_df_processing['Date'] = stock_letter_df_processing['Date'] - stock_letter_df_processing['Date'].shift()
-    stock_letter_df_processing['Date'] = stock_letter_df_processing['Date'].apply(Same_day)
+    stock_letter_df_processing['Date'] = stock_letter_df_processing['Date'].apply(functions.same_day)
     stock_letter_df_processing['Date'][0] = np.nan
 
     # stock_letter_df_processing = stock_letter_df_processing[:1600] #TESTING
@@ -67,37 +56,35 @@ for i in range(4):
     
     stock_letter_df_chunk_resampled_lst = []
     for q in range(len(stock_letter_df_chunk_lst)):
-        #1. Resample prices using previous tick method. (First value just takes first value from before)
+        #1. Resample prices using previous tick method for price. (First value just takes first value from before)
         stock_letter_df_chunk = stock_letter_df_chunk_lst[q]
+
+
         first_value = stock_letter_df_chunk['price'][0]
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk[['price']].resample('5min').ffill()
         stock_letter_df_chunk_resample_price['price'][0] = first_value
         
-        #2. Resample volume by summing volume for each 5 min period. First value just takes first value as before
-        stock_letter_df_chunk_resample_volume = stock_letter_df_chunk[['volume']].resample('5min', label='right', closed='right').sum()
+        #2. Work out daily volume
+        daily_volume = stock_letter_df_chunk['volume'].sum()
 
-        #3. Combine volume and price columns in one dataframe
-        stock_letter_df_chunk_resample = pd.concat([stock_letter_df_chunk_resample_price, stock_letter_df_chunk_resample_volume], axis = 1)
-        # stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        #3. Calculate 5-minute return 
+        stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
-        #4. Calculate 5-minute retusn 
-        stock_letter_df_chunk_resample['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample['price'] / stock_letter_df_chunk_resample.shift(1)['price'])
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        #4. Calculate daily realised volatility using square sum of 5-miute returns
+        stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
-        #5. Calculate 30-minute realised volatility using square sum of 5-miute returns
-        stock_letter_df_chunk_resample['Daily RV'] = stock_letter_df_chunk_resample['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample)).apply(RealisedVolatility)
-        # stock_letter_df_chunk_resample['volume']
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        #5. Add daily volume and RV to new dataframe
+        stock_letter_df_chunk_resample_price['volume'] = np.nan
+        stock_letter_df_chunk_resample_price['volume'][0] = daily_volume
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.drop(columns = ['price', '5-Minute (log) Return'])
+        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample_price
 
-
-        # stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.resample('30min').ffill()
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(columns = ['5-Minute (log) Return', 'price'])
-        # stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.rename(columns = {'30-minute rolling realised volatility': '30-minute RV'})
-
-
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
-        # print(stock_letter_df_chunk_resample.head())
-        # break
+        #Formatting
+        stock_letter_df_chunk_resample['RV'] = stock_letter_df_chunk_resample['Daily RV']
+        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(['Daily RV'], axis = 1)
+      
         #---
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
@@ -107,11 +94,41 @@ for i in range(4):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
-stock_df_processed_lst[0].to_excel('data/T.xlsx')
+# stock_df_processed_lst[0].to_excel('data/T.xlsx')
+
+for i in range(4):
+
+    stock_A_df = stock_df_processed_lst[i]
+    stock_A_df = stock_A_df.apply(sp.stats.zscore)
+
+    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume > 3].index)
+    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume < -3].index)
+    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV < -3].index)
+    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV > 3].index)
+
+    stock_A_df.RV = stock_A_df.RV.shift(3)
+    stock_A_df = stock_A_df.dropna()
 
 
+    # plt.figure()
+    # plt.plot(stock_A_df.volume, stock_A_df.RV, '.', markersize = 0.8)
+
+    # a, b = np.polyfit(stock_A_df.volume, stock_A_df.RV, 1)
+    # plt.plot(stock_A_df.volume, a * stock_A_df.volume + b)
+
+    # plt.show()
+
+    from statsmodels.tsa.stattools import grangercausalitytests
+    # perform Granger-Causality test
+    print(grangercausalitytests(stock_A_df[['RV', 'volume']], maxlag=[1]))
 
 
-# print('END')
+    # print(stock_A_df.corr('pearson').iloc[0,1])
+    # print(stock_A_df.corr('kendall').iloc[0,1])
+    # print(stock_A_df.corr('spearman').iloc[0,1])
+    print('--------')
+
+
+print('END')
 
 

@@ -23,7 +23,7 @@ from cleaning import stock_df_lst as stock_df_lst_clean
 stock_df_processed_lst = []
 
 # for i in range(len(stock_df_lst_clean)):
-for i in range(4):
+for i in range(1):
     stock_letter_df_clean = stock_df_lst_clean[i]
     stock_letter_df_chunked_lst = []
 
@@ -74,9 +74,11 @@ for i in range(4):
         #3. Calculate 5-minute return 
         stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
+        stock_letter_df_chunk_resample_price.to_excel('data/T.xlsx')
+        
 
         #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].shift(2)
+        stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].shift()
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
         #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -105,7 +107,8 @@ for i in range(4):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
-# stock_df_processed_lst[0].to_excel('data/T.xlsx')
+
+stock_df_processed_lst[0].to_excel('data/T2.xlsx')
 
 for i in range(4):
 
@@ -127,21 +130,21 @@ for i in range(4):
     
 
     #define predictor and response variables
-    y = stock_A_df['Daily Return']
-    x = stock_A_df.volume
+    # y = stock_A_df['Daily Return']
+    # x = stock_A_df.volume
 
-    #add constant to predictor variables
-    x = sm.add_constant(x)
+    # #add constant to predictor variables
+    # x = sm.add_constant(x)
 
-    #fit linear regression model
-    model = sm.OLS(y, x).fit()
+    # #fit linear regression model
+    # model = sm.OLS(y, x).fit()
 
-    #view model summary
-    print(model.summary())
+    # #view model summary
+    # print(model.summary())
 
   
 
-    # print(stock_A_df.corr('pearson'))
+    print(stock_A_df.corr('pearson'))
     # print(stock_A_df.corr('kendall'))
     # print(stock_A_df.corr('spearman'))
     print('--------')

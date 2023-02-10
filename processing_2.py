@@ -89,7 +89,7 @@ for i in range(len(stock_df_lst)):
             df_ = pd.concat([new_first_line, df_])
             stock_letter_df_chunk_resample = df_.set_index('ts')
         
-
+    
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
     
@@ -97,29 +97,29 @@ for i in range(len(stock_df_lst)):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
+for i in range(4):
+    stock_A_df = stock_df_processed_lst[i]
+    stock_A_df = stock_A_df.apply(sp.stats.zscore)
 
-stock_A_df = stock_df_processed_lst[0]
-stock_A_df = stock_A_df.apply(sp.stats.zscore)
+    print(len(stock_A_df))
 
-print(len(stock_A_df))
+    # stock_A_df['volume'] = stock_A_df['volume'].shift(1)
+    # stock_A_df['volume'] = stock_A_df['volume'].dropna()
 
-stock_A_df['volume'] = stock_A_df['volume'].shift(1)
-stock_A_df['volume'] = stock_A_df['volume'].dropna()
+    stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
+    stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
 
-stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
-stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
-
-print(len(stock_A_df))
-
-
-# stock_A_df.to_excel('data/WHATEVER.xlsx')
-
-# plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.', markersize = 0.8)
-
-# a, b = np.polyfit(stock_A_df['volume'], stock_A_df['30-minute RV'], 1)
-# plt.plot(stock_A_df['volume'], a * stock_A_df['volume'] + b)
+    print(len(stock_A_df))
 
 
-print(stock_A_df.corr(method = 'pearson'))
+    # stock_A_df.to_excel('data/WHATEVER.xlsx')
+
+    # plt.plot(stock_A_df['volume'], stock_A_df['30-minute RV'], '.', markersize = 0.8)
+
+    # a, b = np.polyfit(stock_A_df['volume'], stock_A_df['30-minute RV'], 1)
+    # plt.plot(stock_A_df['volume'], a * stock_A_df['volume'] + b)
+
+
+    print(stock_A_df.corr(method = 'pearson'))
 
 print('END')

@@ -32,3 +32,9 @@ def same_day(x):
 
 def realised_volatility(x):
     return np.sqrt(sum([y ** 2 for y in x]))
+
+
+def min_max(x):
+    max_ = max(x)
+    min_ = min(x)
+    return max_ - min_

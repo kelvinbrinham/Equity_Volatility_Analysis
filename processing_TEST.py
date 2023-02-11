@@ -23,7 +23,7 @@ from cleaning import stock_df_lst as stock_df_lst_clean
 stock_df_processed_lst = []
 
 # for i in range(len(stock_df_lst_clean)):
-for i in range(1):
+for i in range(4):
     stock_letter_df_clean = stock_df_lst_clean[i]
     stock_letter_df_chunked_lst = []
 
@@ -74,16 +74,16 @@ for i in range(1):
         #3. Calculate 5-minute return 
         stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
-        stock_letter_df_chunk_resample_price.to_excel('data/T.xlsx')
         
 
         #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].shift()
-        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
+        # stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].shift(6)
+        # stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
         #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
         #4. Calculate daily realised volatility using square sum of 5-miute returns
         stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
+        stock_letter_df_chunk_resample_price['5-minute return sum'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).sum()
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
         #5. Add daily volume and RV to new dataframe
@@ -108,46 +108,54 @@ for i in range(1):
 
 
 
-stock_df_processed_lst[0].to_excel('data/T2.xlsx')
 
-for i in range(4):
+# for i in range(4):
 
-    stock_A_df = stock_df_processed_lst[i]
-    stock_A_df = stock_A_df.apply(sp.stats.zscore)
+#     stock_A_df = stock_df_processed_lst[i]
+#     stock_A_df = stock_A_df.apply(sp.stats.zscore)
+#     # print(stock_A_df.head())
 
-    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume > 3].index)
-    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume < -3].index)
-    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV < -3].index)
-    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV > 3].index)
-    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] < -3].index)
-    stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] > 3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume > 3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume < -3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV < -3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV > 3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] < -3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] > 3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['5-minute return sum'] < -3].index)
+#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['5-minute return sum'] > 3].index)
 
-    # stock_A_df.RV = stock_A_df.RV.shift(1)
-    # stock_A_df = stock_A_df.dropna()
+#     stock_A_df.RV = stock_A_df.RV.shift(1)
+#     stock_A_df = stock_A_df.dropna()
 
-    # plt.plot(stock_A_df.volume, stock_A_df['Daily Return'], '.', markersize = 0.8)
-    # plt.show()
+#     # plt.plot(stock_A_df.volume, stock_A_df['Daily Return'], '.', markersize = 0.8)
+#     # plt.show()
     
 
-    #define predictor and response variables
-    # y = stock_A_df['Daily Return']
-    # x = stock_A_df.volume
+#     # define predictor and response variables
+#     # y = stock_A_df.RV
+#     # x = stock_A_df.volume
 
-    # #add constant to predictor variables
-    # x = sm.add_constant(x)
+#     # #add constant to predictor variables
+#     # x = sm.add_constant(x)
 
-    # #fit linear regression model
-    # model = sm.OLS(y, x).fit()
+#     # #fit linear regression model
+#     # model = sm.OLS(y, x).fit()
 
-    # #view model summary
-    # print(model.summary())
+#     # #view model summary
+#     # print(model.summary())
 
   
 
-    print(stock_A_df.corr('pearson'))
-    # print(stock_A_df.corr('kendall'))
-    # print(stock_A_df.corr('spearman'))
-    print('--------')
+#     print(stock_A_df.corr('pearson'))
+#     # print(stock_A_df.corr('kendall'))
+#     # print(stock_A_df.corr('spearman'))
+#     print('--------')
+
+
+df_ = pd.concat(stock_df_processed_lst)
+df_ = df_.apply(sp.stats.zscore)
+print(df_.corr('pearson'))
+
 
 
 print('END')

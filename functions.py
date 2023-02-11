@@ -31,6 +31,6 @@ def same_day(x):
 
 
 def realised_volatility(x):
-    return np.sqrt(sum([y ** 2 for y in x]))
+    return sum([y ** 2 for y in x])
 
 

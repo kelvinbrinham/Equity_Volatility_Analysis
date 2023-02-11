@@ -13,7 +13,7 @@ import stats
 import scipy as sp
 import functions
 
-from cleaning_2 import stock_df_lst
+from cleaning import stock_df_lst
 
 #List of chunked data
 stock_df_processed_lst = []
@@ -76,14 +76,18 @@ for i in range(4):
         stock_letter_df_chunk_resample['5-Minute (log) Return'][0] = np.mean(stock_letter_df_chunk_resample['5-Minute (log) Return'][1:6])
         
         #5. Calc. 30-minute realised volatility
-        stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['5-Minute (log) Return'].rolling(6 * 17).apply(functions.realised_volatility)
-        stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['30-minute rolling realised volatility'].shift()
+        stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['5-Minute (log) Return'].rolling(6).apply(functions.realised_volatility)
+        # stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['30-minute rolling realised volatility'].shift()
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.resample('30min').ffill()
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(columns = ['5-Minute (log) Return', 'price'])
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.rename(columns = {'30-minute rolling realised volatility': '30-minute RV'})
         
-    
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+
+        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.rolling(len(stock_letter_df_chunk_resample)).mean()
+
+        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        
 
         #Fixing missing 8:30 values in 4 of the days for stock C. I filled the volume and RV with the mean of the remaining days values.
         # if len(stock_letter_df_chunk_resample) != 15:
@@ -100,10 +104,10 @@ for i in range(4):
 
 
 
+for i in range(4):
 
-
-stock_A_df = stock_df_processed_lst[0]
-stock_A_df = stock_A_df.apply(sp.stats.zscore)
+    stock_A_df = stock_df_processed_lst[i]
+    stock_A_df = stock_A_df.apply(sp.stats.zscore)
 # print(stock_A_df.head())
 # print(stock_A_df.tail())
 # stock_A_df.to_excel('data/TEST.xlsx')
@@ -111,8 +115,8 @@ stock_A_df = stock_A_df.apply(sp.stats.zscore)
 # print(len(stock_A_df))
 
 
-stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
-stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
+# stock_A_df = stock_A_df[(stock_A_df.volume < 3) & (stock_A_df.volume > -3)]
+# stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minute RV'] > -3)]
 
 # print(len(stock_A_df))
 
@@ -126,6 +130,6 @@ stock_A_df = stock_A_df[(stock_A_df['30-minute RV'] < 3) & (stock_A_df['30-minut
 
 
 
-print(stock_A_df.corr(method = 'pearson'))
+    print(stock_A_df.corr(method = 'pearson'))
 
 print('END')

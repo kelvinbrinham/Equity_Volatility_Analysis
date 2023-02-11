@@ -19,7 +19,7 @@ import functions
 from cleaning import stock_df_lst as stock_df_lst_clean
 
 stock_string = 'ABCD'
-stock_data_length_dict = {'A': 101, 'B': 101, 'C': 95, 'D': 95}
+stock_data_length_dict = {'A': 8, 'B': 8, 'C': 7, 'D': 7}
 
 #List of chunked data
 stock_df_processed_lst = []
@@ -67,7 +67,8 @@ for i in range(4):
 
 
         first_value = stock_letter_df_chunk['price'][0]
-        stock_letter_df_chunk_resample_price = stock_letter_df_chunk[['price']].resample('60min').ffill()
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk[['price']].resample('5min').ffill() #HERE
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.resample('60min').mean() #HERE
         stock_letter_df_chunk_resample_price['price'][0] = first_value
         
         #2. Work out daily volume
@@ -78,7 +79,9 @@ for i in range(4):
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
         #4. Check number of 1-hour intervals. 
-        if len(stock_letter_df_chunk_resample_price) != 8:
+        stock_letter = stock_string[i]
+        if len(stock_letter_df_chunk_resample_price) != stock_data_length_dict[stock_letter]:
+            print('HERE = ', len(stock_letter_df_chunk_resample_price))
             raise Exception('Data Unequal')
 
 
@@ -110,36 +113,13 @@ for i in range(4):
 
     stock_df_processed_lst.append(stock_data_processed_df)
 
-fig, axs = plt.subplots(4, sharex = True, figsize = (5, 7))
-fig.suptitle('Vertically stacked subplots')
 
 
+stock_A_df = stock_df_processed_lst[0]
 
-for i in range(4):
-    # string = 'ABCD'
-    # letter_stock = string[i]
-    stock_A_df = stock_df_processed_lst[i]
-
-    # stock_A_df.volume = stock_A_df.volume.shift()
-    # stock_A_df = stock_A_df.dropna()
-    # print(len(stock_A_df))
-#     print(len(stock_A_df))
-    # df_ = pd.concat(stock_df_processed_lst)
-    stock_A_df = stock_A_df.apply(sp.stats.zscore)
-
-    
-    # # plt.plot(stock_A_df.index, stock_A_df.RV, linewidth = 0.8)
-    # axs[i].plot(stock_A_df.index, stock_A_df.RV, linewidth = 0.8, color = 'black')
-    # axs[i].set_title(f'Stock {letter_stock}', fontsize = 10)
-    # axs[i].set(ylabel = 'RV')
-
-# plt.legend()
-# plt.show()
-
-    print(stock_A_df.corr('pearson'))
-
+plt.figure()
+plt.plot(stock_A_df.index, stock_A_df.RV)
+plt.show()
 
 
 print('END')
-
-

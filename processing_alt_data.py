@@ -23,7 +23,7 @@ from cleaning import stock_df_lst as stock_df_lst_clean
 stock_df_processed_lst = []
 
 # data_df = pd.read_csv('data/AAPL.csv')
-data_df = pd.read_csv('data/AAPL_HOURLY.csv')
+data_df = pd.read_csv('data/ivv_HOURLY.csv')
 
 
 
@@ -64,8 +64,6 @@ for q in range(len(stock_letter_df_chunk_lst)):
 
     length_ = len(stock_df_chunk)
     stock_df_chunk['Daily RV'] = stock_df_chunk['Return'].rolling(len(stock_df_chunk)).apply(functions.realised_volatility) / length_
-    print(stock_df_chunk)
-    break
 
 
     stock_df_chunk['Volume'][0] = daily_volume

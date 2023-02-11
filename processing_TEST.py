@@ -110,52 +110,11 @@ for i in range(4):
 
 
 
-# for i in range(4):
-
-#     stock_A_df = stock_df_processed_lst[i]
-#     stock_A_df = stock_A_df.apply(sp.stats.zscore)
-#     # print(stock_A_df.head())
-
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume > 3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.volume < -3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV < -3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df.RV > 3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] < -3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['Daily Return'] > 3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['5-minute return sum'] < -3].index)
-#     stock_A_df = stock_A_df.drop(stock_A_df[stock_A_df['5-minute return sum'] > 3].index)
-
-#     stock_A_df.RV = stock_A_df.RV.shift(1)
-#     stock_A_df = stock_A_df.dropna()
-
-#     # plt.plot(stock_A_df.volume, stock_A_df['Daily Return'], '.', markersize = 0.8)
-#     # plt.show()
-    
-
-#     # define predictor and response variables
-#     # y = stock_A_df.RV
-#     # x = stock_A_df.volume
-
-#     # #add constant to predictor variables
-#     # x = sm.add_constant(x)
-
-#     # #fit linear regression model
-#     # model = sm.OLS(y, x).fit()
-
-#     # #view model summary
-#     # print(model.summary())
-
-  
-
-#     print(stock_A_df.corr('pearson'))
-#     # print(stock_A_df.corr('kendall'))
-#     # print(stock_A_df.corr('spearman'))
-#     print('--------')
-
-
-df_ = pd.concat(stock_df_processed_lst)
-df_ = df_.apply(sp.stats.zscore)
-print(df_.corr('pearson'))
+for i in range(4):
+    stock_A_df = stock_df_processed_lst[i]
+    # df_ = pd.concat(stock_df_processed_lst)
+    stock_A_df = stock_A_df.apply(sp.stats.zscore)
+    print(stock_A_df.corr('pearson'))
 
 
 

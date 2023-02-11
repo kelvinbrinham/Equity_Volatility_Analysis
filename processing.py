@@ -71,6 +71,7 @@ for i in range(len(stock_df_lst_clean)):
         open_price = stock_letter_df_chunk['price'][0]
         close_price = stock_letter_df_chunk['price'][-1]
         daily_return = np.log(close_price / open_price)
+        daily_return_percentage = (close_price - open_price) / open_price
 
         # 1. Resample prices using previous tick method for price. (First value just takes first value from before)
         first_value = stock_letter_df_chunk['price'][0]
@@ -112,6 +113,7 @@ for i in range(len(stock_df_lst_clean)):
         stock_letter_df_chunk_resample['RV'] = stock_letter_df_chunk_resample['Daily RV']
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(['Daily RV'], axis = 1)
         stock_letter_df_chunk_resample['Daily Return'] = [daily_return]
+        stock_letter_df_chunk_resample['Daily Return Percentage'] = [daily_return_percentage]
     
       
         #---

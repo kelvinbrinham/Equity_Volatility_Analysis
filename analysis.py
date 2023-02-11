@@ -2,6 +2,7 @@
 Analysis
 '''
 
+from statsmodels.graphics.tsaplots import plot_predict
 from sklearn.metrics import mean_squared_error
 import numpy as np
 import pandas as pd
@@ -52,17 +53,52 @@ from statsmodels.graphics.tsaplots import plot_pacf
 # plt.show()
 
 
-
 from statsmodels.tsa.arima.model import ARIMA
 
-model = ARIMA(stock_A_df['Daily Return Percentage'], order = (8, 0, 1))
-result = model.fit()
+# model = ARIMA(stock_A_df['Daily Return Percentage'], order = (8, 0, 1))
+# result = model.fit()
+
 # print(result.summary())
 
 
-residuals = pd.DataFrame(result.resid)
+# residuals = pd.DataFrame(result.resid)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (7, 3))
-ax1.plot(residuals)
-ax2.plot(residuals, density = True)
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (7, 3))
+# ax1.plot(residuals)
+# ax2.hist(residuals, density = True)
+# plt.show()
+# print(stock_A_df.index)
+
+# fig, ax = plt.subplots()
+# ax = stock_A_df.plot(ax = ax)
+
+# plot_predict(result, start = stock_A_df.index[80], end = stock_A_df.index[-1], dynamic = False, ax = ax)
+# plt.show()
+
+
+#Train test split
+n = int(len(stock_A_df) * 0.75)
+train = stock_A_df['Daily Return Percentage'][:n]
+test = stock_A_df['Daily Return Percentage'][n:]
+
+model = ARIMA(train, order = (8, 0, 1))
+result = model.fit()
+
+step = 7
+
+fc = result.forecast(step)
+conf = fc.conf_int()
+
+
+fc = pd.Series(fc, index = test[:step].index)
+lower = pd.Series(conf[:, 0], index = test[:step].index)
+upper = pd.Series(conf[:, 1], index=test[:step].index)
+
+plt.figure(figsize = (7, 3))
+plt.plot(test[:step], label = 'Actual')
+plt.plot(fc, label = 'Forecast')
+plt.fill_between(lower.index, lower, upper, color = 'k', alpha = 0.1)
+plt.title('H')
+plt.legend(loc = 'upper left')
+
 plt.show()

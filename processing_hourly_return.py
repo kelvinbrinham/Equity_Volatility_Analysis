@@ -128,22 +128,24 @@ for i in range(len(stock_df_lst_clean)):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
+
 #Print correlation matrix for each stock
-for i in range(4):
-    string = 'ABCD'
+if __name__ == '__main__':
+    for i in range(4):
+        string = 'ABCD'
 
-    print('--------------')
-    print('Stock ', string[i])
-    stock_letter_df = stock_df_processed_lst[i]
+        print('--------------')
+        print('Stock ', string[i])
+        stock_letter_df = stock_df_processed_lst[i]
 
-    #Apply z-score (in case of plotting)
-    stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
+        #Apply z-score (in case of plotting)
+        stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
 
-    print(stock_letter_df.corr('pearson'))
-    print('--------------')
-
-
-
+        print(stock_letter_df.corr('pearson'))
+        print('--------------')
 
 
-print('END')
+
+
+
+# print('END')

@@ -56,7 +56,10 @@ for letter in [*string.ascii_uppercase][:4]:
 
 
     #Remove data outside of market hours
-    stock_letter_df_unclean['Market Hours'] = stock_letter_df_unclean['ts'].apply(functions.market_hours)
+    if letter in 'AB':
+        stock_letter_df_unclean['Market Hours'] = stock_letter_df_unclean['ts'].apply(functions.market_hours_AB)
+    else:
+        stock_letter_df_unclean['Market Hours'] = stock_letter_df_unclean['ts'].apply(functions.market_hours_CD)
     stock_letter_df_unclean = stock_letter_df_unclean[stock_letter_df_unclean['Market Hours']]
     stock_letter_df_unclean = stock_letter_df_unclean.drop(['Market Hours'], axis = 1)
 

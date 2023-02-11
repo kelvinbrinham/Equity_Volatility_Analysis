@@ -11,9 +11,19 @@ import stats
 import scipy as sp
 
 
-def market_hours(x):
+def market_hours_AB(x):
     opening_time = dt.time(8, 00, 00)
     closing_time = dt.time(16, 30, 00)
+    if x.time() >= opening_time and x.time() <= closing_time:
+        return True
+
+    else:
+        return False
+
+
+def market_hours_CD(x):
+    opening_time = dt.time(8, 00, 00)
+    closing_time = dt.time(16, 00, 00)
     if x.time() >= opening_time and x.time() <= closing_time:
         return True
 

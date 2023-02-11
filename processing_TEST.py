@@ -82,6 +82,7 @@ for i in range(4):
         #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
         #4. Calculate daily realised volatility using square sum of 5-miute returns
+        print(i, len(stock_letter_df_chunk_resample_price))
         stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
         stock_letter_df_chunk_resample_price['5-minute return sum'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).sum()
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()

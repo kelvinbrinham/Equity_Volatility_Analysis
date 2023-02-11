@@ -76,12 +76,17 @@ for i in range(4):
         stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
         
-        #4. Check number of 5 minute intervals
+        #4. Check number of 5 minute intervals. 
+        #The number is only incorrect once, the chunk in question has the 08:05 value missing which i replace with the chunk mean this once through hardcoding. 
         stock_letter = stock_string[i]
         if len(stock_letter_df_chunk_resample_price) != stock_data_length_dict[stock_letter]:
+            stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.reset_index()
+            stock_letter_df_chunk_resample_price.loc[-1] = [(stock_letter_df_chunk_resample_price['ts'][0] - timedelta(hours=0, minutes=5)), stock_letter_df_chunk_resample_price['price'].mean(), stock_letter_df_chunk_resample_price['5-Minute (log) Return'].mean()]
+            stock_letter_df_chunk_resample_price.index = stock_letter_df_chunk_resample_price.index + 1  # shifting index
+            stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.sort_index() 
+            stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.set_index('ts') 
             stock_letter_df_chunk_resample_price.to_excel('data/TEST.xlsx')
-            print(len(stock_letter_df_chunk_resample_price))
-            break
+        
 
 
         #5. Calculate daily realised volatility using square sum of 5-miute returns
@@ -109,14 +114,28 @@ for i in range(4):
 
     stock_df_processed_lst.append(stock_data_processed_df)
 
+fig, axs = plt.subplots(4, sharex = True)
+fig.suptitle('Vertically stacked subplots')
 
 
-
-# for i in range(4):
-#     stock_A_df = stock_df_processed_lst[i]
+for i in range(4):
+    string = 'ABCD'
+    letter_stock = string[i]
+    stock_A_df = stock_df_processed_lst[i]
+    # print(len(stock_A_df))
 #     print(len(stock_A_df))
     # df_ = pd.concat(stock_df_processed_lst)
-    # stock_A_df = stock_A_df.apply(sp.stats.zscore)
+    stock_A_df = stock_A_df.apply(sp.stats.zscore)
+
+    
+    # plt.plot(stock_A_df.index, stock_A_df.RV, linewidth = 0.8)
+    axs[i].plot(stock_A_df.index, stock_A_df.RV, linewidth = 0.8, color = 'black')
+    # axs[i].set_title(f'Stock {letter_stock}', fontsize = 10)
+    axs[i].y_label(f'Stock {letter_stock}', fontsize = 10)
+
+# plt.legend()
+plt.show()
+
     # print(stock_A_df.corr('pearson'))
 
 

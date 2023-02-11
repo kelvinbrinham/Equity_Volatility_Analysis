@@ -87,7 +87,6 @@ for i in range(4):
 
         #5. Calculate daily realised volatility using square sum of 5-miute returns
         stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['1-hour (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
-        stock_letter_df_chunk_resample_price.to_excel('data/T.xlsx')
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
 
@@ -97,6 +96,9 @@ for i in range(4):
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.drop(columns = ['price', '1-hour (log) Return'])
         stock_letter_df_chunk_resample = stock_letter_df_chunk_resample_price
 
+        #7. Add daily return 
+        stock_letter_df_chunk_resample['Daily Return'] = np.nan
+        stock_letter_df_chunk_resample['Daily Return'][0] = daily_return
         
 
         #Formatting
@@ -114,12 +116,30 @@ for i in range(4):
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
+# stock_A_df = stock_df_processed_lst[i]
+# # print(stock_A_df.corr(method = 'pearson'))
 
-stock_A_df = stock_df_processed_lst[0]
+# plt.figure()
+# plt.plot(stock_A_df.index, stock_A_df['Daily Return'])
+# plt.show()
 
-plt.figure()
-plt.plot(stock_A_df.index, stock_A_df.RV)
-plt.show()
+# define predictor and response variables
+# import statsmodels.api as sm
+# y = stock_A_df.RV
+# x = stock_A_df.volume
+
+# #add constant to predictor variables
+# x = sm.add_constant(x)
+
+# #fit linear regression model
+# model = sm.OLS(y, x).fit()
+
+# #view model summary
+# print(model.summary())
+# print('-----')
 
 
-print('END')
+
+
+
+# print('END')

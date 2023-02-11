@@ -139,7 +139,7 @@ for i in range(4):
     #Apply z-score (in case of plotting)
     stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
 
-    print(stock_letter_df.corr('spearman'))
+    print(stock_letter_df.corr('pearson'))
     print('--------------')
 
 

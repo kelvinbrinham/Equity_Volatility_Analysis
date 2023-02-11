@@ -17,7 +17,8 @@ import functions
 
 from cleaning import stock_df_lst as stock_df_lst_clean
 
-
+stock_string = 'ABCD'
+stock_data_length_dict = {'A': 101, 'B': 101, 'C': 95, 'D': 95}
 
 #List of chunked data
 stock_df_processed_lst = []
@@ -75,19 +76,20 @@ for i in range(4):
         stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
         
+        #4. Check number of 5 minute intervals
+        stock_letter = stock_string[i]
+        if len(stock_letter_df_chunk_resample_price) != stock_data_length_dict[stock_letter]:
+            stock_letter_df_chunk_resample_price.to_excel('data/TEST.xlsx')
+            print(len(stock_letter_df_chunk_resample_price))
+            break
 
-        #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        # stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].shift(6)
-        # stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
-        #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
-        #4. Calculate daily realised volatility using square sum of 5-miute returns
-        print(i, len(stock_letter_df_chunk_resample_price))
+        #5. Calculate daily realised volatility using square sum of 5-miute returns
         stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
         stock_letter_df_chunk_resample_price['5-minute return sum'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).sum()
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
-        #5. Add daily volume and RV to new dataframe
+        #6. Add daily volume and RV to new dataframe
         stock_letter_df_chunk_resample_price['volume'] = np.nan
         stock_letter_df_chunk_resample_price['volume'][0] = daily_volume
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.drop(columns = ['price', '5-Minute (log) Return'])
@@ -110,11 +112,12 @@ for i in range(4):
 
 
 
-for i in range(4):
-    stock_A_df = stock_df_processed_lst[i]
+# for i in range(4):
+#     stock_A_df = stock_df_processed_lst[i]
+#     print(len(stock_A_df))
     # df_ = pd.concat(stock_df_processed_lst)
-    stock_A_df = stock_A_df.apply(sp.stats.zscore)
-    print(stock_A_df.corr('pearson'))
+    # stock_A_df = stock_A_df.apply(sp.stats.zscore)
+    # print(stock_A_df.corr('pearson'))
 
 
 

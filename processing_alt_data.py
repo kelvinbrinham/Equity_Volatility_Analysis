@@ -16,12 +16,6 @@ import scipy as sp
 import functions
 
 
-from cleaning import stock_df_lst as stock_df_lst_clean
-
-
-# List of chunked data
-stock_df_processed_lst = []
-
 # data_df = pd.read_csv('data/AAPL.csv')
 data_df = pd.read_csv('data/ivv_HOURLY.csv')
 
@@ -78,34 +72,13 @@ for q in range(len(stock_letter_df_chunk_lst)):
 data_df_FINAL = pd.concat(stock_letter_df_chunk_resampled_lst)
 
 data_df_FINAL = data_df_FINAL.apply(sp.stats.zscore)
-# data_df_FINAL.drop()
-# print(data_df_FINAL)
-# data_df_FINAL.to_excel('data/T.xlsx')
-
-# data_df_FINAL = data_df_FINAL.drop(data_df_FINAL[data_df_FINAL.volume > 3].index)
-# data_df_FINAL = data_df_FINAL.drop(data_df_FINAL[data_df_FINAL.volume < -3].index)
-# data_df_FINAL = data_df_FINAL.drop(data_df_FINAL[data_df_FINAL.RV > 3].index)
-# data_df_FINAL = data_df_FINAL.drop(data_df_FINAL[data_df_FINAL.RV < -3].index)
 
 
-plt.plot(data_df_FINAL.volume, data_df_FINAL.RV, '.', markersize = 0.8)
-a, b = np.polyfit(data_df_FINAL.volume, data_df_FINAL.RV, 1)
-plt.plot(data_df_FINAL.volume, a * data_df_FINAL.volume + b, linewidth = 1, color = 'black')
-plt.show()
+# plt.plot(data_df_FINAL.volume, data_df_FINAL.RV, '.', markersize = 0.8)
+# a, b = np.polyfit(data_df_FINAL.volume, data_df_FINAL.RV, 1)
+# plt.plot(data_df_FINAL.volume, a * data_df_FINAL.volume + b, linewidth = 1, color = 'black')
+# plt.show()
 
-# define predictor and response variables
-# import statsmodels.api as sm
-# y = data_df_FINAL.RV
-# x = data_df_FINAL.volume
-
-# #add constant to predictor variables
-# x = sm.add_constant(x)
-
-# #fit linear regression model
-# model = sm.OLS(y, x).fit()
-
-# #view model summary
-# print(model.summary())
 
 print(data_df_FINAL.corr(method = 'pearson'))
 

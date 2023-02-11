@@ -1,5 +1,7 @@
 '''
-processing hourly RV
+processing
+
+Here RV is calculated from hourly mean price which itself is calculated from 5-minute prices. 
 '''
 
 

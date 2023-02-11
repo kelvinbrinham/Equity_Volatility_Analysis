@@ -1,33 +1,24 @@
 '''
 Processing
+
+Here RV is calculated from 5-minute prices each day. 
 '''
 
+import statsmodels.api as sm
 import numpy as np
 import pandas as pd
 import json as js
-# import datetime as dt
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import string
 import stats
 import scipy as sp
+import functions
 
-
-from cleaning import cleaning_stats_df
 from cleaning import stock_df_lst as stock_df_lst_clean
-from cleaning import market_hours
 
-
-def RealisedVolatility(x):
-    return np.sqrt(sum([y ** 2 for y in x]))
-
-def Same_day(x):
-    if not x:
-        return np.nan
-
-    else:
-        return 1
-
+stock_string = 'ABCD'
+stock_data_length_dict = {'A': 101, 'B': 101, 'C': 95, 'D': 95}
 
 #List of chunked data
 stock_df_processed_lst = []
@@ -47,7 +38,7 @@ for i in range(4):
 
     #Chunk dataframe into dataframes for each day
     stock_letter_df_processing['Date'] = stock_letter_df_processing['Date'] - stock_letter_df_processing['Date'].shift()
-    stock_letter_df_processing['Date'] = stock_letter_df_processing['Date'].apply(Same_day)
+    stock_letter_df_processing['Date'] = stock_letter_df_processing['Date'].apply(functions.same_day)
     stock_letter_df_processing['Date'][0] = np.nan
 
     # stock_letter_df_processing = stock_letter_df_processing[:1600] #TESTING
@@ -67,60 +58,75 @@ for i in range(4):
     
     stock_letter_df_chunk_resampled_lst = []
     for q in range(len(stock_letter_df_chunk_lst)):
-        #1. Resample prices using previous tick method. (First value just takes first value from before)
+        #1. Resample prices using previous tick method for price. (First value just takes first value from before)
         stock_letter_df_chunk = stock_letter_df_chunk_lst[q]
+        open_price = stock_letter_df_chunk['price'][0]
+        close_price = stock_letter_df_chunk['price'][-1]
+        daily_return = np.log(close_price / open_price)
+
+
         first_value = stock_letter_df_chunk['price'][0]
         stock_letter_df_chunk_resample_price = stock_letter_df_chunk[['price']].resample('5min').ffill()
         stock_letter_df_chunk_resample_price['price'][0] = first_value
         
-        #2. Resample volume by summing volume for each 5 min period. First value just takes first value as before
-        stock_letter_df_chunk_resample_volume = stock_letter_df_chunk[['volume']].resample('5min', label='right', closed='right').sum()
+        #2. Work out daily volume
+        daily_volume = stock_letter_df_chunk['volume'].sum()
 
-        #3. Combine volume and price columns in one dataframe
-        stock_letter_df_chunk_resample = pd.concat([stock_letter_df_chunk_resample_price, stock_letter_df_chunk_resample_volume], axis = 1)
-        # stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        #3. Calculate 5-minute return 
+        stock_letter_df_chunk_resample_price['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample_price['price'] / stock_letter_df_chunk_resample_price.shift(1)['price'])
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
+        
+        #4. Check number of 5 minute intervals. 
+        #The number is only incorrect once, the chunk in question has the 08:05 value missing which i replace with the chunk mean this once through hardcoding. 
+        stock_letter = stock_string[i]
+        if len(stock_letter_df_chunk_resample_price) != stock_data_length_dict[stock_letter]:
+            stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.reset_index()
+            stock_letter_df_chunk_resample_price.loc[-1] = [(stock_letter_df_chunk_resample_price['ts'][0] - timedelta(hours=0, minutes=5)), stock_letter_df_chunk_resample_price['price'].mean(), stock_letter_df_chunk_resample_price['5-Minute (log) Return'].mean()]
+            stock_letter_df_chunk_resample_price.index = stock_letter_df_chunk_resample_price.index + 1  # shifting index
+            stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.sort_index() 
+            stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.set_index('ts') 
+            stock_letter_df_chunk_resample_price.to_excel('data/TEST.xlsx')
+        
 
-        #4. Calculate 5-minute retusn 
-        stock_letter_df_chunk_resample['5-Minute (log) Return'] = np.log(stock_letter_df_chunk_resample['price'] / stock_letter_df_chunk_resample.shift(1)['price'])
-        # stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
 
-        #5. Calculate 30-minute realised volatility using square sum of 5-miute returns
-        stock_letter_df_chunk_resample['30-minute rolling realised volatility'] = stock_letter_df_chunk_resample['5-Minute (log) Return'].rolling(6).apply(RealisedVolatility)
-        # stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        #5. Calculate daily realised volatility using square sum of 5-minute returns
+        stock_letter_df_chunk_resample_price['Daily RV'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).apply(functions.realised_volatility)
+        stock_letter_df_chunk_resample_price['5-minute return sum'] = stock_letter_df_chunk_resample_price['5-Minute (log) Return'].rolling(len(stock_letter_df_chunk_resample_price)).sum()
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.dropna()
 
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.resample('30min').ffill()
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(columns = ['5-Minute (log) Return', 'price'])
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.rename(columns = {'30-minute rolling realised volatility': '30-minute RV'})
+        #6. Add daily volume and RV to new dataframe
+        stock_letter_df_chunk_resample_price['volume'] = np.nan
+        stock_letter_df_chunk_resample_price['volume'][0] = daily_volume
+        stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.drop(columns = ['price', '5-Minute (log) Return'])
+        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample_price
 
-
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.dropna()
+        #Formatting
+        stock_letter_df_chunk_resample['RV'] = stock_letter_df_chunk_resample['Daily RV']
+        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(['Daily RV'], axis = 1)
+        stock_letter_df_chunk_resample['Daily Return'] = [daily_return]
+    
+      
         #---
         stock_letter_df_chunk_resampled_lst.append(stock_letter_df_chunk_resample)
 
-        #Fixing missing 8:30 values in 4 of the days for stock C. I filled the volume and RV with the mean of the remaining days values.
-        if len(stock_letter_df_chunk_resample) != 15:
-            df_ = stock_letter_df_chunk_resample.reset_index()
-            new_first_line = pd.DataFrame([[df_['ts'][0] - timedelta(minutes = 30), df_['volume'].mean(), df_['30-minute RV'].mean()]], columns = df_.columns)
-            df_ = pd.concat([new_first_line, df_])
-            stock_letter_df_chunk_resample = df_.set_index('ts')
-
             
     stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
-
-    #Calculate prior day rolling average volatility 
-    stock_data_processed_df['Prior Day Rolling Average Trading Volume'] = stock_data_processed_df['volume'].rolling(15).mean()
-
-    stock_data_processed_df['Prior Day Rolling Average RV'] = stock_data_processed_df['30-minute RV'].rolling(15).mean()
-
-
-    stock_data_processed_df = stock_data_processed_df.dropna()
-
 
     stock_df_processed_lst.append(stock_data_processed_df)
 
 
 
 
-# print('END')
+for i in range(4):
+
+    stock_A_df = stock_df_processed_lst[i]
+
+    stock_A_df = stock_A_df.apply(sp.stats.zscore)
+
+    print(stock_A_df.corr('pearson'))
+
+
+
+print('END')
 
 

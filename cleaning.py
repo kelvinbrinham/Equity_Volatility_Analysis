@@ -1,5 +1,5 @@
 '''
-Cleaning 2.0
+Cleaning
 '''
 
 import numpy as np

@@ -16,6 +16,8 @@ import scipy as sp
 from processing_hourly_return import stock_df_processed_lst
 
 stock_A_df = stock_df_processed_lst[0]
+print(stock_A_df.head())
+
 
 from statsmodels.tsa.arima.model import ARIMA
 

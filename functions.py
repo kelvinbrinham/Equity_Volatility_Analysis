@@ -11,6 +11,7 @@ import stats
 import scipy as sp
 
 
+#Masks column of dates with bool for inside or outside market hours for stocks A and B
 def market_hours_AB(x):
     opening_time = dt.time(8, 00, 00)
     closing_time = dt.time(16, 30, 00)
@@ -20,7 +21,7 @@ def market_hours_AB(x):
     else:
         return False
 
-
+#Masks column of dates with bool for inside or outside market hours for stocks C and D
 def market_hours_CD(x):
     opening_time = dt.time(8, 00, 00)
     closing_time = dt.time(16, 00, 00)
@@ -31,7 +32,7 @@ def market_hours_CD(x):
         return False
 
 
-
+#Masks columns of deltatimes with np.non/1 for no time/time
 def same_day(x):
     if not x:
         return np.nan

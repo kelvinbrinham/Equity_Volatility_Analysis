@@ -75,6 +75,10 @@ from statsmodels.tsa.arima.model import ARIMA
 # plot_predict(result, start = stock_A_df.index[80], end = stock_A_df.index[-1], dynamic = False, ax = ax)
 # plt.show()
 
+stock_A_df.index = pd.date_range('2017-03-01', periods=121, freq='D')
+stock_A_df = stock_A_df.reset_index()
+print(stock_A_df)
+stock_A_df = stock_A_df.drop(columns = 'index')
 
 #Train test split
 n = int(len(stock_A_df) * 0.75)
@@ -84,21 +88,39 @@ test = stock_A_df['Daily Return Percentage'][n:]
 model = ARIMA(train, order = (8, 0, 1))
 result = model.fit()
 
-step = 7
-
-fc = result.forecast(step)
-conf = fc.conf_int()
 
 
-fc = pd.Series(fc, index = test[:step].index)
-lower = pd.Series(conf[:, 0], index = test[:step].index)
-upper = pd.Series(conf[:, 1], index=test[:step].index)
+fig, ax = plt.subplots(figsize=(15, 5))
 
-plt.figure(figsize = (7, 3))
-plt.plot(test[:step], label = 'Actual')
-plt.plot(fc, label = 'Forecast')
-plt.fill_between(lower.index, lower, upper, color = 'k', alpha = 0.1)
-plt.title('H')
-plt.legend(loc = 'upper left')
+# Plot the data (here we are subsetting it to get a better look at the forecasts)
+stock_A_df['Daily Return Percentage'].plot(ax=ax)
+
+print('--------')
+# stock_A_df.index = pd.date_range('2017-03-01', periods = 121, freq='D') 
+print(stock_A_df.index)
+print('--------')
+
+
+# Construct the forecasts
+fcast = result.get_forecast('96').summary_frame()
+print(fcast)
+fcast['mean'].plot(ax=ax, style='k--')
+ax.fill_between(fcast.index, fcast['mean_ci_lower'], fcast['mean_ci_upper'], color='k', alpha=0.1)
+
+# fc = result.forecast(steps = step)
+# conf = result.get_forecast(steps = step).conf_int()
+# se = output.stderr
+
+
+# fc = pd.Series(fc, index = test[:step].index)
+# lower = pd.Series(conf[:, 0], index = test[:step].index)
+# upper = pd.Series(conf[:, 1], index = test[:step].index)
+
+# plt.figure(figsize = (7, 3))
+# plt.plot(test[:step], label = 'Actual')
+# plt.plot(fc, label = 'Forecast')
+# plt.fill_between(lower.index, lower, upper, color = 'k', alpha = 0.1)
+# plt.title('H')
+# plt.legend(loc = 'upper left')
 
 plt.show()

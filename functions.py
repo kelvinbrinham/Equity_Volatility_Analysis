@@ -45,3 +45,6 @@ def realised_volatility(x):
     return sum([y ** 2 for y in x])
 
 
+#Assuming 252 trading day year
+def annualise_daily_return(x):
+    return 252 * x

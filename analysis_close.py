@@ -26,9 +26,12 @@ stock_A_close_df = stock_A_close_df.dropna()
 stock_A_close_df = stock_A_close_df.apply(sp.stats.zscore)
 
 
+from statsmodels.tsa.arima.model import ARIMA
+
 stock_A_df = stock_A_close_df.drop(columns = ['Close'])
-print(stock_A_df.head())
-print('---ENDEEE-----')
+
+stock_A_df = stock_A_df.resample('D').mean()
+
 
 # Train test split
 n = int(len(stock_A_df) * 0.75)
@@ -47,7 +50,9 @@ stock_A_df['Rolling 5 day return'].plot(ax=ax)
 
 
 # Construct the forecasts
-fcast = result.get_forecast('96').summary_frame()
+fcast = result.get_forecast().summary_frame()
 print(fcast)
 fcast['mean'].plot(ax=ax, style='k--')
 ax.fill_between(fcast.index, fcast['mean_ci_lower'], fcast['mean_ci_upper'], color='k', alpha=0.1)
+
+plt.show()

@@ -1,5 +1,7 @@
 # Equity_Volatility_Analysis
 
+***WORK IN PROGRESS*** - Improvements to be made soon (e.g. removing outliers and cleaning data better)
+
 Note: This task was under time pressure, with more time there are many improvements i would make. For instance, the ARIMA model script would much better
 suit a Jupyter notebook and the rest of the scripts could be made into functions/classes etc.
 

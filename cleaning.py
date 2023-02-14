@@ -72,8 +72,8 @@ for letter in [*string.ascii_uppercase][:4]:
     #Remove outliers
     #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
     #Specfically, 
+    #~Differnce matrix... FINISH
 
-    
 
 
 

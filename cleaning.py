@@ -70,8 +70,17 @@ for letter in [*string.ascii_uppercase][:4]:
 
 
     #Remove outliers
+    #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
+    #Specfically, 
+
     
-stock_df_lst[0].plot()
+
+
+
+
+    
+stock_df = stock_df_lst[1]
+plt.plot(stock_df.index, stock_df.price, '.', markersize = 0.8)
 plt.show()
 
 

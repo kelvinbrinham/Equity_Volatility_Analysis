@@ -69,6 +69,13 @@ for letter in [*string.ascii_uppercase][:4]:
     cleaning_stats_df_lst.append(stock_letter_data_cleaning_stats_df)
 
 
+    #Remove outliers
+    
+stock_df_lst[0].plot()
+plt.show()
+
+
+
 
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis = 0, ignore_index = True)
 # print(cleaning_stats_df)

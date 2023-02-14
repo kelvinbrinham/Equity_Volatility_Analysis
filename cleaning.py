@@ -73,15 +73,35 @@ for letter in [*string.ascii_uppercase][:4]:
     #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
     #Specfically, 
     #~Differnce matrix... FINISH
+    stock_letter_df_unclean['Price Difference'] = stock_letter_df_unclean['price'].diff()
+    price_diff_std = stock_letter_df_unclean['Price Difference'].std()
+    cutoff = 3 * price_diff_std
+    stock_letter_df_unclean = stock_letter_df_unclean.dropna()
+
+    for i in range(1, len(stock_letter_df_unclean) - 1):
+        if stock_letter_df_unclean['Price Difference'][i] > cutoff and stock_letter_df_unclean['Price Difference'][i + 1] < - cutoff:
+            stock_letter_df_unclean['price'][i + 1] = np.nan
+
+        elif stock_letter_df_unclean['Price Difference'][i] < -cutoff and stock_letter_df_unclean['Price Difference'][i + 1] > cutoff:
+            stock_letter_df_unclean['price'] = np.nan
+
+    outlier_length = len(stock_letter_df_unclean)
+    stock_letter_df_unclean = stock_letter_df_unclean.dropna()
+    outliers = outlier_length - len(stock_letter_df_unclean)
+    print(outliers)
+    plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean['price'])
+    plt.show()
+    break
+    
 
 
 
 
 
     
-stock_df = stock_df_lst[1]
-plt.plot(stock_df.index, stock_df.price, '.', markersize = 0.8)
-plt.show()
+# stock_df = stock_df_lst[1]
+# plt.plot(stock_df.index, stock_df.price, '.', markersize = 0.8)
+# plt.show()
 
 
 

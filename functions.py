@@ -48,3 +48,15 @@ def realised_volatility(x):
 #Assuming 252 trading day year
 def annualise_daily_return(x):
     return 252 * x
+
+
+
+def remove_outliers(x, cutoff):
+    if x > cutoff or x < -cutoff:
+        return np.nan
+    
+    else:
+        return x
+
+
+

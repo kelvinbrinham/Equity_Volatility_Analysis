@@ -51,12 +51,6 @@ def annualise_daily_return(x):
 
 
 
-def remove_outliers(x, cutoff):
-    if x > cutoff or x < -cutoff:
-        return np.nan
-    
-    else:
-        return x
 
 
 

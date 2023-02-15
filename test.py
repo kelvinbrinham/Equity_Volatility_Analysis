@@ -1,25 +1,33 @@
 '''
 Test
 '''
+
 import numpy as np
+import pandas as pd
+import json as js
+import datetime as dt
+import matplotlib.pyplot as plt
+import string
+import stats
+import scipy as sp
+import functions
 
-lst = [9, 10, 11, 10, 9, 200, 8]
-lst_diff = np.diff(lst)
-
-print(lst)
-print(lst_diff)
-
-std = np.std(lst_diff)
-cutoff = std
-
-for i in range(len(lst_diff) - 1):
-    if lst_diff[i] > cutoff and lst_diff[i + 1] < - cutoff:
-        lst[i + 1] = np.nan
-
-    elif lst_diff[i] < -cutoff and lst_diff[i + 1] > cutoff:
-        lst[i + 1] = np.nan
+def outlier(x):
+    cutoff = 100
+    if x > cutoff and  
 
 
-print('----')
-print(lst)
-print(lst_diff)
+df = pd.DataFrame(np.array([10, 11, 13, 200, 9, 8, 10]), columns = ['price'])
+df['price_diff'] = df.price.diff()
+df['price_diff_shift'] = df.price_diff.shift()
+cutoff = 100
+
+
+
+
+print(df)
+
+
+
+
+

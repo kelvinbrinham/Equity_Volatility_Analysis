@@ -50,7 +50,15 @@ def annualise_daily_return(x):
     return 252 * x
 
 
+cutoff = 100
 
-
-
+def outlier(x):
+    if np.isnan(x):
+        return 0
+    
+    elif abs(x) > cutoff:
+        return np.nan
+    
+    else:
+        return 0
 

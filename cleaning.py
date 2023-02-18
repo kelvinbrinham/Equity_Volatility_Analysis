@@ -65,14 +65,33 @@ for letter in [*string.ascii_uppercase][:4]:
 
     stock_letter_data_cleaning_stats_df['Rows with missing/invalid data'] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
 
+
+    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    #Remove outliers
+    #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
+    # cutoff is defined as TWICE the distance from the outlier to the two neighbouring points
+    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean.price.diff(2)
+    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean['2nd_price_difference'].shift(-1)
+    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean['2nd_price_difference'].apply(functions.outlier)
+    print(stock_letter_df_unclean)
+    stock_letter_df_unclean.to_excel('data/Test.xlsx')
+    break
+    stock_letter_df_unclean = stock_letter_df_unclean.dropna()
+    stock_letter_df_unclean = stock_letter_df_unclean.drop(columns = ['2nd_price_difference'])
+    
+    plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean.price)
+    plt.show()
+    break
+   
+    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+   
+
+
     stock_df_lst.append(stock_letter_df_unclean)
     cleaning_stats_df_lst.append(stock_letter_data_cleaning_stats_df)
 
 
-    #Remove outliers
-    #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
-    #Specfically, 
-    #~Differnce matrix... FINISH
     
 
 

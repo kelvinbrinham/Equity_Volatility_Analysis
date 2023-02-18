@@ -12,18 +12,32 @@ import stats
 import scipy as sp
 import functions
 
+
 def outlier(x):
-    cutoff = 100
-    if x > cutoff and  
+    if np.isnan(x):
+        return 0
+    
+    elif abs(x) > cutoff:
+        return np.nan
+    
+    else:
+        return 0
+    
+
+cutoff = 300
 
 
-df = pd.DataFrame(np.array([10, 11, 13, 200, 9, 8, 10]), columns = ['price'])
-df['price_diff'] = df.price.diff()
-df['price_diff_shift'] = df.price_diff.shift()
-cutoff = 100
+df = pd.DataFrame(np.array([10, 11, 13, 200, 8, 10]), columns = ['price'])
+df['price_diff_2nd'] = df.price.diff().diff()
+df.price_diff_2nd = df.price_diff_2nd.shift(-1)
 
 
+df.price_diff_2nd = df.price_diff_2nd.apply(outlier)
 
+df = df.dropna()
+
+
+# df = df.dropna()
 
 print(df)
 

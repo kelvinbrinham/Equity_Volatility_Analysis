@@ -87,14 +87,13 @@ for letter in [*string.ascii_uppercase][:4]:
         stock_letter_df_unclean.price[split_index + 1:] = stock_letter_df_unclean.price[split_index + 1:] * split_factor
         stock_letter_df_unclean.volume[split_index + 1:] = stock_letter_df_unclean.volume[split_index + 1:] / split_factor
         
-    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+   
     #Check if first and/or last prices are outliers becuase the previous outlier method cannot handle these
     if abs(stock_letter_df_unclean.price.values[0] - stock_letter_df_unclean.price.values[1]) > outlier_cutoff_dict[letter]:
         stock_letter_df_unclean = stock_letter_df_unclean.drop(index = stock_letter_df_unclean.index[0], axis = 0)
 
     if abs(stock_letter_df_unclean.price.values[-1] - stock_letter_df_unclean.price.values[-2]) > outlier_cutoff_dict[letter]:
         stock_letter_df_unclean = stock_letter_df_unclean.drop(index = stock_letter_df_unclean.index[-1], axis = 0)
-    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 
 

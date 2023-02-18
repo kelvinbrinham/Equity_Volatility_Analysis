@@ -17,10 +17,11 @@ columns_lst = ['Stock', 'Unclean size', 'Repeated entries', 'Rows with missing/i
 
 cleaning_stats_df_lst = []
 stock_df_lst = []
-
+outlier_cutoff_dict = {'A': 20, 'B': 100, 'C': 0.9, 'D': 100}
 
 #For each stock...
 for letter in [*string.ascii_uppercase][:4]:
+    # letter = 'D'
     filename = f'data/stock_{letter}.csv'
 
     #Import raw data
@@ -70,18 +71,15 @@ for letter in [*string.ascii_uppercase][:4]:
     #Remove outliers
     #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
     # cutoff is defined as TWICE the distance from the outlier to the two neighbouring points
-    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean.price.diff(2)
+    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean.price.diff().diff()
     stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean['2nd_price_difference'].shift(-1)
-    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean['2nd_price_difference'].apply(functions.outlier)
-    print(stock_letter_df_unclean)
-    stock_letter_df_unclean.to_excel('data/Test.xlsx')
-    break
+    cutoff__ = outlier_cutoff_dict[letter]
+    stock_letter_df_unclean['2nd_price_difference'] = stock_letter_df_unclean['2nd_price_difference'].apply(functions.outlier, args = (cutoff__,))
+    stock_letter_df_unclean_length = len(stock_letter_df_unclean)
     stock_letter_df_unclean = stock_letter_df_unclean.dropna()
+    stock_letter_data_cleaning_stats_df['Outliers'] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
     stock_letter_df_unclean = stock_letter_df_unclean.drop(columns = ['2nd_price_difference'])
     
-    plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean.price)
-    plt.show()
-    break
    
     #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -103,10 +101,7 @@ stock_df = stock_df_lst[0]
 # plt.plot(stock_df.index, stock_df.price, '.', markersize = 0.8)
 # plt.show()
 
-
-
-
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis = 0, ignore_index = True)
-# print(cleaning_stats_df)
+print(cleaning_stats_df)
 
 

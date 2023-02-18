@@ -17,6 +17,9 @@ columns_lst = ['Stock', 'Unclean size', 'Repeated entries', 'Rows with missing/i
 
 cleaning_stats_df_lst = []
 stock_df_lst = []
+
+#Outlier price range for each stock. These numbers represent the sum of the difference of the outlier price to its two neighbours. 
+#E.g. say we have prices 3, 400, 4. We see 400 is likely an outlier, the relevant cutoff in this case is 400 - 3 + 400 - 4 = 793
 outlier_cutoff_dict = {'A': 20, 'B': 100, 'C': 0.9, 'D': 100}
 
 #For each stock...

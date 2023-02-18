@@ -21,7 +21,6 @@ outlier_cutoff_dict = {'A': 20, 'B': 100, 'C': 0.9, 'D': 100}
 
 #For each stock...
 for letter in [*string.ascii_uppercase][:4]:
-    # letter = 'D'
     filename = f'data/stock_{letter}.csv'
 
     #Import raw data
@@ -67,7 +66,6 @@ for letter in [*string.ascii_uppercase][:4]:
     stock_letter_data_cleaning_stats_df['Rows with missing/invalid data'] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
 
 
-    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
     #Remove outliers
     #I choose to define an outlier by a point which is largely different to 2 similar points either side of it. 
     # cutoff is defined as TWICE the distance from the outlier to the two neighbouring points
@@ -81,9 +79,24 @@ for letter in [*string.ascii_uppercase][:4]:
     stock_letter_df_unclean = stock_letter_df_unclean.drop(columns = ['2nd_price_difference'])
     
    
+    #Removing stock split with stock D
+    if letter == 'D':
+        #Index on which the split happens is observed
+        split_index = 32435
+        split_factor = stock_letter_df_unclean.price.values[split_index] / stock_letter_df_unclean.price.values[split_index + 1]
+        stock_letter_df_unclean.price[split_index + 1:] = stock_letter_df_unclean.price[split_index + 1:] * split_factor
+        stock_letter_df_unclean.volume[split_index + 1:] = stock_letter_df_unclean.volume[split_index + 1:] / split_factor
+        
+    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    #Check if first and/or last prices are outliers becuase the previous outlier method cannot handle these
+    if abs(stock_letter_df_unclean.price.values[0] - stock_letter_df_unclean.price.values[1]) > outlier_cutoff_dict[letter]:
+        stock_letter_df_unclean = stock_letter_df_unclean.drop(index = stock_letter_df_unclean.index[0], axis = 0)
+
+    if abs(stock_letter_df_unclean.price.values[-1] - stock_letter_df_unclean.price.values[-2]) > outlier_cutoff_dict[letter]:
+        stock_letter_df_unclean = stock_letter_df_unclean.drop(index = stock_letter_df_unclean.index[-1], axis = 0)
     #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
-   
+
 
 
     stock_df_lst.append(stock_letter_df_unclean)
@@ -98,8 +111,10 @@ for letter in [*string.ascii_uppercase][:4]:
 
     
 stock_df = stock_df_lst[0]
+
 # plt.plot(stock_df.index, stock_df.price, '.', markersize = 0.8)
-# plt.show()
+plt.plot(stock_df.index, stock_df.price)
+plt.show()
 
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis = 0, ignore_index = True)
 print(cleaning_stats_df)

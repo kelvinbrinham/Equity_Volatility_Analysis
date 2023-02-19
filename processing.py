@@ -92,7 +92,7 @@ for i in range(len(stock_df_lst_clean)):
             stock_letter_df_chunk_resample_price.index = stock_letter_df_chunk_resample_price.index + 1  # shifting index
             stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.sort_index() 
             stock_letter_df_chunk_resample_price = stock_letter_df_chunk_resample_price.set_index('ts') 
-            stock_letter_df_chunk_resample_price.to_excel('data/TEST.xlsx')
+            # stock_letter_df_chunk_resample_price.to_excel('data/TEST.xlsx')
         
 
 

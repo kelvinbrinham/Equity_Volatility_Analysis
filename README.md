@@ -14,6 +14,8 @@ functions.py - Includes useful functions i have defined
 
 data/stock_A.csv - Unclean trading data for stock A (similarly for stocks B, C and D)
 
+figures/ - Example plots which can be produces from the above scripts
+
 REPORT_INCLUDEHERE - A brief report outlining my process
 
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>

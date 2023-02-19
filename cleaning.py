@@ -30,7 +30,7 @@ for letter in [*string.ascii_uppercase][:4]:
     stock_letter_df_unclean = pd.read_csv(filename)
 
     plt.figure()
-    plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean.price, label = 'Before Cleaning')
+    plt.plot(stock_letter_df_unclean.ts, stock_letter_df_unclean.price, label = 'Before Cleaning')
     
     #Length before cleaning
     stock_letter_df_unclean_length = len(stock_letter_df_unclean)
@@ -101,9 +101,10 @@ for letter in [*string.ascii_uppercase][:4]:
     if abs(stock_letter_df_unclean.price.values[-1] - stock_letter_df_unclean.price.values[-2]) > outlier_cutoff_dict[letter]:
         stock_letter_df_unclean = stock_letter_df_unclean.drop(index = stock_letter_df_unclean.index[-1], axis = 0)
 
-    plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean.price, label = 'After Cleaning')
+    plt.plot(stock_letter_df_unclean.ts, stock_letter_df_unclean.price, label = 'After Cleaning')
     plt.title('Stock A')
-    plt.xlabel('Price')
+    plt.ylabel('Price')
+    plt.xlabel('Time')
     plt.legend()
     plt.savefig('data/price.png', format = 'png', dpi = 800)
     plt.show()

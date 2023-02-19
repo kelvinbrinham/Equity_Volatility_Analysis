@@ -16,7 +16,7 @@ data/stock_A.csv - Unclean trading data for stock A (similarly for stocks B, C a
 
 figures/ - Example plots which can be produces from the above scripts
 
-Report.png - A brief report outlining my process
+Report.pdf - A brief report outlining my process
 
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 

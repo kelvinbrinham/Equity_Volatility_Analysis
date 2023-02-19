@@ -119,18 +119,11 @@ for letter in [*string.ascii_uppercase][:4]:
 
     
 
-
-
-
-
-    
-stock_df = stock_df_lst[0]
-
-# plt.plot(stock_df.index, stock_df.price, '.', markersize = 0.8)
-plt.plot(stock_df.index, stock_df.price)
-plt.show()
-
 cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis = 0, ignore_index = True)
-print(cleaning_stats_df)
+
+if __name__ == '__main__':
+    print(cleaning_stats_df)
+
+    print('END 1')
 
 

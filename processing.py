@@ -150,9 +150,9 @@ if __name__ == '__main__':
                 a, b = np.polyfit(stock_letter_df.volume, stock_letter_df.RV, 1)
                 plt.plot(stock_letter_df.volume, a * stock_letter_df.volume + b)
 
-            plt.ylabel('Volume [z-score]')
-            plt.xlabel('RV [z-score]')
-            plt.title(f'Stock {letter}')
+            plt.ylabel('Volume [z-score]', fontsize = 16)
+            plt.xlabel('RV [z-score]', fontsize = 16)
+            # plt.title(f'Stock {letter}')
 
             plt.savefig(f'data/Final_{letter}.png', format = 'png', dpi = 800)
             

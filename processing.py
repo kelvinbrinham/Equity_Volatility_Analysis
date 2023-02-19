@@ -132,28 +132,32 @@ for i in range(len(stock_df_lst_clean)):
 if __name__ == '__main__':
     for i in range(4):
         string = 'ABCD'
+        letter = string[i]
 
         print('--------------')
         print('Stock ', string[i])
         stock_letter_df = stock_df_processed_lst[i]
 
         #<><><><><><><><><><><><><><><><><><><><><><><><><>
-        if i == 1:
+        stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
+        
+        if True:
             plt.figure()
             plt.plot(stock_letter_df.volume, stock_letter_df.RV, '.', markersize = 1)
 
             a, b = np.polyfit(stock_letter_df.volume, stock_letter_df.RV, 1)
-            
+
             plt.plot(stock_letter_df.volume, a * stock_letter_df.volume + b)
 
-            plt.show()
-            break
+            plt.ylabel('Volume [z-score]')
+            plt.xlabel('RV [z-score]')
+            plt.title(f'Stock {letter}')
+
+            plt.savefig(f'data/Final_{letter}.png', format = 'png', dpi = 800)
+            
             
         #<><><><><><><><><><><><><><><><><><><><><><><><><>
-         
-        #Apply z-score (in case of plotting)
-        stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
-
+       
         print(stock_letter_df.corr('pearson'))
         print('--------------')
 

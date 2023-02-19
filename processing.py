@@ -141,13 +141,14 @@ if __name__ == '__main__':
         #<><><><><><><><><><><><><><><><><><><><><><><><><>
         stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
         
-        if True:
+        if True: #Set True to save plots of final data, False otherwise.
             plt.figure()
             plt.plot(stock_letter_df.volume, stock_letter_df.RV, '.', markersize = 1)
-
-            a, b = np.polyfit(stock_letter_df.volume, stock_letter_df.RV, 1)
-
-            plt.plot(stock_letter_df.volume, a * stock_letter_df.volume + b)
+            
+            if letter in 'ABD': #Dont plot straight line for stock C because weak relationship
+                #Plot line of best fit (least squares)
+                a, b = np.polyfit(stock_letter_df.volume, stock_letter_df.RV, 1)
+                plt.plot(stock_letter_df.volume, a * stock_letter_df.volume + b)
 
             plt.ylabel('Volume [z-score]')
             plt.xlabel('RV [z-score]')

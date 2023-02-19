@@ -24,7 +24,7 @@ outlier_cutoff_dict = {'A': 20, 'B': 100, 'C': 0.9, 'D': 100}
 
 #For each stock...
 for letter in [*string.ascii_uppercase][:4]:
-    letter = 'D'
+    
     filename = f'data/stock_{letter}.csv'
     
     #Import raw data

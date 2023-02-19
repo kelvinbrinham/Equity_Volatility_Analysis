@@ -137,6 +137,20 @@ if __name__ == '__main__':
         print('Stock ', string[i])
         stock_letter_df = stock_df_processed_lst[i]
 
+        #<><><><><><><><><><><><><><><><><><><><><><><><><>
+        if i == 1:
+            plt.figure()
+            plt.plot(stock_letter_df.volume, stock_letter_df.RV, '.', markersize = 1)
+
+            a, b = np.polyfit(stock_letter_df.volume, stock_letter_df.RV, 1)
+            
+            plt.plot(stock_letter_df.volume, a * stock_letter_df.volume + b)
+
+            plt.show()
+            break
+            
+        #<><><><><><><><><><><><><><><><><><><><><><><><><>
+         
         #Apply z-score (in case of plotting)
         stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
 

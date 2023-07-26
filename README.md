@@ -1,4 +1,4 @@
-# Equity Volatility Analysis
+# Equity_Volatility_Analysis
 
 A tool to analyse the relationship between volatility and liquidity in high frequency stock trading data. I have included a small report summarising
 the details behind cleaning, processing and analysing the data.

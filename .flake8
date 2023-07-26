@@ -1,0 +1,8 @@
+[flake8]
+max_line_length = 80
+extend_ignore =
+    D105, D107, D205, D212, D415, E203, E731, F403, F405, ANN002, ANN003,
+    ANN101, ANN102
+per_file_ignores = */__init__.py:F401, tests/*:D100,ANN201
+exclude = .eggs, .git, __pycache__, .tox, .vscode, build/, dist/
+docstring_convention = google

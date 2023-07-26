@@ -4,218 +4,200 @@ Processing
 Here RV is calculated from 5-minute prices each day.
 """
 
-import string
 from datetime import timedelta
+from typing import List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sp
 
-import functions
-from cleaning import stock_df_lst as stock_df_lst_clean
 
-stock_string = "ABCD"
+class Processor:
+    """
+    Class to process the intra-day stock data and return realised volatility
+    (RV) (according to the prescription in the report) and daily volume.
 
-# Dictionary to hold the correct number of 5-minute return slots for each 
-# trading day for each stock
-stock_data_length_dict = {"A": 101, "B": 101, "C": 95, "D": 95}
+    Args:
+        data: Clean stock data.
 
-# List holding df for each stock
-stock_df_processed_lst = []
+    Returns:
+        Processed stock data. I.e. daily stock data including volume and RV.
+    """
 
-# Loop over each stock
-for i in range(len(stock_df_lst_clean)):
-    # Load stock df from cleaning.py
-    stock_letter_df_clean = stock_df_lst_clean[i]
+    def __init__(self, data: pd.DataFrame) -> None:
+        self.data = data
+        # List of chunked dataframes (1 for each day)
+        self._chunked_df_lst = []
+        self._processed_chunks_lst = []
+        self._processed_data_df = None
 
-    # List to hold df for each trading day
-    stock_letter_df_chunked_lst = []
+    def __call__(self, stock_data_length: int) -> pd.DataFrame:
+        """
+        Process the data.
 
-    # Set timestamp as index
-    stock_letter_df_processing = stock_letter_df_clean.set_index("ts")
+        Args:
+            stock_data_length: Correct number of 5-minute return ticks for the
+            stock.
 
-    # Create date column so as to chunk dataframe by day
-    stock_letter_df_processing["Date"] = pd.to_datetime(
-        stock_letter_df_processing.index
-    )
-    # Remove time component of datetime
-    stock_letter_df_processing["Date"] = stock_letter_df_processing[
-        "Date"
-    ].dt.normalize()
+        Returns:
+            Processed daily data.
+        """
+        # Reset timestamp as index
+        self.data = self.data.set_index("ts")
+        # Create date column to chunk data
 
-    # Chunk dataframe into dataframes for each day
-    stock_letter_df_processing["Date"] = (
-        stock_letter_df_processing["Date"]
-        - stock_letter_df_processing["Date"].shift()
-    )
-    stock_letter_df_processing["Date"] = stock_letter_df_processing[
-        "Date"
-    ].apply(functions.same_day)
-    stock_letter_df_processing["Date"][0] = np.nan
+        # Chunk dataframe into dataframes for each day
+        self._chunked_df_lst = self._chunk_data(data=self.data)
 
-    stock_letter_df_processing = stock_letter_df_processing.reset_index()
+        # Process the data for each day
+        for i in range(len(self._chunked_df_lst)):
+            chunk = self._chunked_df_lst[i]
 
-    # Note the indices where the df changes day
-    day_indices_lst = stock_letter_df_processing.index[
-        stock_letter_df_processing["Date"] == 1
-    ].tolist()
-    stock_letter_df_processing = stock_letter_df_clean.set_index("ts")
+            # Daily return using closing price
+            close = chunk["price"][-1]
 
-    # Chunk stock df into df for each day
-    stock_letter_df_chunk_lst = []
-    day_indices_lst.insert(0, 0)
-    for j in range(len(day_indices_lst) - 1):
-        index_1 = day_indices_lst[j]
-        index_2 = day_indices_lst[j + 1]
-        stock_letter_df_chunk = stock_letter_df_processing.iloc[
-            index_1:index_2, :
-        ]
-        stock_letter_df_chunk_lst.append(stock_letter_df_chunk)
+            # 1. Resample using previous tick method over 5-minute intervals
+            first_tick = chunk["price"][0]
+            chunk_res = chunk[["price"]].resample("5min").ffill()
+            chunk_res["price"][0] = first_tick
 
-    # List to hold the processed df for each day
-    stock_letter_df_chunk_resampled_lst = []
-    # Loop over each chunk/day
-    for q in range(len(stock_letter_df_chunk_lst)):
-        stock_letter_df_chunk = stock_letter_df_chunk_lst[q]
+            # 2. Daily volume
+            volume = chunk["volume"].sum()
 
-        # Calculate daily return using closing prices
-        close_price = stock_letter_df_chunk["price"][-1]
-        # daily_return = np.log(close_price / open_price)
+            # 3. Calculate 5-minute returns
+            chunk_res["5-Minute (log) Return"] = self._returns(data=chunk_res)
+            chunk_res = chunk_res.dropna()
 
-        # 1. Resample prices using previous tick method for price. (First value 
-        # just takes first value from before)
-        first_value = stock_letter_df_chunk["price"][0]
-        stock_letter_df_chunk_resample_price = (
-            stock_letter_df_chunk[["price"]].resample("5min").ffill()
-        )
-        stock_letter_df_chunk_resample_price["price"][0] = first_value
+            # 4. Check number of 5 minute intervals.
+            if len(chunk_res) != stock_data_length:
+                chunk_res = self._fix_missing_intervals(data=chunk_res)
 
-        # 2. Work out daily volume
-        daily_volume = stock_letter_df_chunk["volume"].sum()
-
-        # 3. Calculate 5-minute return
-        stock_letter_df_chunk_resample_price["5-Minute (log) Return"] = np.log(
-            stock_letter_df_chunk_resample_price["price"]
-            / stock_letter_df_chunk_resample_price.shift(1)["price"]
-        )
-        stock_letter_df_chunk_resample_price = (
-            stock_letter_df_chunk_resample_price.dropna()
-        )
-
-        # 4. Check number of 5 minute intervals.
-        # The number is only incorrect once, the chunk in question has the 08:05 
-        # value missing which i replace with the chunk mean this once through 
-        # hardcoding.
-        stock_letter = stock_string[i]
-        if (
-            len(stock_letter_df_chunk_resample_price)
-            != stock_data_length_dict[stock_letter]
-        ):
-            stock_letter_df_chunk_resample_price = (
-                stock_letter_df_chunk_resample_price.reset_index()
+            # 5. Daily realised volatility
+            chunk_res["RV"] = (
+                chunk_res["5-Minute (log) Return"]
+                .rolling(len(chunk_res))
+                .apply(self._realised_volatility)
             )
-            stock_letter_df_chunk_resample_price.loc[-1] = [
-                (
-                    stock_letter_df_chunk_resample_price["ts"][0]
-                    - timedelta(hours=0, minutes=5)
-                ),
-                stock_letter_df_chunk_resample_price["price"].mean(),
-                stock_letter_df_chunk_resample_price[
-                    "5-Minute (log) Return"
-                ].mean(),
-            ]
-            stock_letter_df_chunk_resample_price.index = (
-                stock_letter_df_chunk_resample_price.index + 1
-            )  # shifting index
-            stock_letter_df_chunk_resample_price = (
-                stock_letter_df_chunk_resample_price.sort_index()
-            )
-            stock_letter_df_chunk_resample_price = (
-                stock_letter_df_chunk_resample_price.set_index("ts")
-            )
-            # stock_letter_df_chunk_resample_price.to_excel('data/TEST.xlsx')
+            chunk_res = chunk_res.dropna()
 
-        # 5. Calculate daily realised volatility using square sum of 5-minute 
-        # returns
-        stock_letter_df_chunk_resample_price["Daily RV"] = (
-            stock_letter_df_chunk_resample_price["5-Minute (log) Return"]
-            .rolling(len(stock_letter_df_chunk_resample_price))
-            .apply(functions.realised_volatility)
-        )
-        stock_letter_df_chunk_resample_price = (
-            stock_letter_df_chunk_resample_price.dropna()
-        )
-
-        # 6. Add daily volume and RV to new dataframe
-        stock_letter_df_chunk_resample_price["volume"] = np.nan
-        stock_letter_df_chunk_resample_price["volume"][0] = daily_volume
-        stock_letter_df_chunk_resample_price = (
-            stock_letter_df_chunk_resample_price.drop(
+            # 6. Add daily volume and RV to new dataframe
+            chunk_res["volume"] = np.nan
+            chunk_res["volume"][0] = volume
+            chunk_res = chunk_res.drop(
                 columns=["price", "5-Minute (log) Return"]
             )
-        )
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample_price
 
-        # Formatting
-        stock_letter_df_chunk_resample["RV"] = stock_letter_df_chunk_resample[
-            "Daily RV"
+            chunk_res["Close"] = [close]
+
+            # 7. Add chunk to list of chunks
+            self._processed_chunks_lst.append(chunk_res)
+
+        # Concatenate all chunks into one dataframe
+        self._processed_data_df = pd.concat(self._processed_chunks_lst)
+
+        return self._processed_data_df
+
+    @property
+    def plot(self) -> None:
+        """Plot all processed data correlation matrices."""
+        if self._processed_data_df is None:
+            raise ValueError("Data not processed yet.")
+
+        data = self._processed_data_df
+        data = data.apply(sp.stats.zscore)
+        plt.figure()
+        plt.plot(data.volume, data.RV, ".", markersize=1)
+
+        # Plot line of best fit (least squares)
+        a, b = np.polyfit(data.volume, data.RV, 1)
+        plt.plot(data.volume, a * data.volume + b)
+
+        plt.ylabel("Volume [z-score]", fontsize=16)
+        plt.xlabel("RV [z-score]", fontsize=16)
+        # plt.title(f'Stock {letter}')
+
+        # plt.savefig(f"data/Final_{letter}.png", format="png", dpi=800)
+
+        print(data.corr("pearson"))
+
+    def _realised_volatility(self, x: Union[list, pd.Series]) -> float:
+        """Calculate realised volatility."""
+        return sum([y**2 for y in x])
+
+    def _fix_missing_intervals(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Fill missing value in data with the mean of the data.
+
+        Args:
+            data: Data.
+
+        Returns:
+            Filled data.
+        """
+        out = pd.DataFrame()
+        out = data.reset_index()
+        out.loc[-1] = [
+            (out["ts"][0] - timedelta(hours=0, minutes=5)),
+            out["price"].mean(),
+            out["5-Minute (log) Return"].mean(),
         ]
-        stock_letter_df_chunk_resample = stock_letter_df_chunk_resample.drop(
-            ["Daily RV"], axis=1
-        )
-        # stock_letter_df_chunk_resample['Daily Return'] = [daily_return]
-        stock_letter_df_chunk_resample["Close"] = [close_price]
+        out.index = out.index + 1  # shifting index
+        out = out.sort_index()
+        out = out.set_index("ts")
 
-        # ---
-        # Add df daily chunk to stock_letter_df_chunk_resampled_lst
-        stock_letter_df_chunk_resampled_lst.append(
-            stock_letter_df_chunk_resample
-        )
+        return out
 
-    # Combine daily data into one df for this stock
-    stock_data_processed_df = pd.concat(stock_letter_df_chunk_resampled_lst)
+    def _chunk_data(self, data: pd.DataFrame) -> List[pd.DataFrame]:
+        """
+        Chunk dataframe into dataframes for each day.
 
-    # Add this stocks final df to stock_df_processed_lst
-    stock_df_processed_lst.append(stock_data_processed_df)
+        Args:
+            data: Stock data.
 
+        Returns:
+            List of dataframes, one for each day.
+        """
+        data["Date"] = pd.to_datetime(data.index)
 
-# Print correlation matrix for each stock
-if __name__ == "__main__":
-    for i in range(4):
-        string = "ABCD"
-        letter = string[i]
+        data["Date"] = data["Date"].dt.normalize()
 
-        print("--------------")
-        print("Stock ", string[i])
-        stock_letter_df = stock_df_processed_lst[i]
+        data["Date"] = data["Date"] - data["Date"].shift()
 
-        # <><><><><><><><><><><><><><><><><><><><><><><><><>
-        stock_letter_df = stock_letter_df.apply(sp.stats.zscore)
+        data["Date"] = data["Date"].apply(self._same_day)
 
-        if True:  # Set True to save plots of final data, False otherwise.
-            plt.figure()
-            plt.plot(
-                stock_letter_df.volume, stock_letter_df.RV, ".", markersize=1
-            )
+        data["Date"][0] = np.nan
+        data = data.reset_index()
 
-            if (
-                letter in "ABD"
-            ):  # Dont plot straight line for stock C because weak relationship
-                # Plot line of best fit (least squares)
-                a, b = np.polyfit(stock_letter_df.volume, stock_letter_df.RV, 1)
-                plt.plot(stock_letter_df.volume, a * stock_letter_df.volume + b)
+        # Note the inices where the df changes day
+        day_indices_lst = data.index[data["Date"] == 1].tolist()
+        data = data.set_index("ts")
+        data = data.drop(columns=["Date"])
 
-            plt.ylabel("Volume [z-score]", fontsize=16)
-            plt.xlabel("RV [z-score]", fontsize=16)
-            # plt.title(f'Stock {letter}')
+        # Chunk stock df into df for each day
+        stock_letter_df_chunk_lst = []
+        day_indices_lst.insert(0, 0)
+        for j in range(len(day_indices_lst) - 1):
+            index_1 = day_indices_lst[j]
+            index_2 = day_indices_lst[j + 1]
+            stock_letter_df_chunk = data.iloc[index_1:index_2, :]
+            stock_letter_df_chunk_lst.append(stock_letter_df_chunk)
 
-            plt.savefig(f"data/Final_{letter}.png", format="png", dpi=800)
+        return stock_letter_df_chunk_lst
 
-        # <><><><><><><><><><><><><><><><><><><><><><><><><>
+    def _same_day(self, x: int) -> int:
+        """
+        Mask value with np.nan if it is the first value of the day. 1
+        otherwise.
+        """
+        if not x:
+            return np.nan
 
-        print(stock_letter_df.corr("pearson"))
-        print("--------------")
+        else:
+            return 1
 
+    def _returns(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Calculate log returns of neighbouring data points in data."""
+        returns = np.log(data["price"] / data.shift(1)["price"])
 
-print("END 2")
+        return returns.dropna()

@@ -1,64 +1,71 @@
-"""
-Functions
-"""
-import datetime as dt
-import json as js
-import string
+"""Functions"""
 
-import matplotlib.pyplot as plt
+import datetime as dt
+
 import numpy as np
 import pandas as pd
-import scipy as sp
-import stats
 
 
-# Masks column of dates with bool for inside or outside market hours for stocks A and B
-def market_hours_AB(x):
-    opening_time = dt.time(8, 00, 00)
-    closing_time = dt.time(16, 30, 00)
-    if x.time() >= opening_time and x.time() <= closing_time:
+def market_hours(
+    time: dt.datetime, market_open: dt.datetime, market_close: dt.datetime
+) -> bool:
+    """
+    Masks a point with True if it is within market hours and False if it is
+    outside market hours.
+
+    Args:
+        time: Current time.
+        market_open: Market opening time.
+        market_close: Market closing time.
+
+    Returns:
+        True if time is within market hours, False otherwise.
+    """
+    if time.time() >= market_open and time.time() <= market_close:
         return True
 
     else:
         return False
 
 
-# Masks column of dates with bool for inside or outside market hours for stocks C and D
-def market_hours_CD(x):
-    opening_time = dt.time(8, 00, 00)
-    closing_time = dt.time(16, 00, 00)
-    if x.time() >= opening_time and x.time() <= closing_time:
-        return True
+def outlier(data_point: float, cutoff: float) -> float:
+    """
+    Mask a point above cutoff with np.nan. Mask a point below cutoff with 0.
 
-    else:
-        return False
+    Args:
+        data_point: Data point.
+        cutoff: Cutoff value.
 
-
-# Masks columns of deltatimes with np.non/1 for no time/time
-def same_day(x):
-    if not x:
-        return np.nan
-
-    else:
-        return 1
-
-
-def realised_volatility(x):
-    return sum([y**2 for y in x])
-
-
-# Assuming 252 trading day year
-def annualise_daily_return(x):
-    return 252 * x
-
-
-def outlier(x, cutoff):
-    cutoff_ = cutoff
-    if np.isnan(x):
+    Returns:
+        np.nan if data_point is above cutoff, 0 otherwise.
+    """
+    if np.isnan(data_point):
         return 0
 
-    elif abs(x) > cutoff_:
+    elif abs(data_point) > cutoff:
         return np.nan
 
     else:
         return 0
+
+
+def remove_stock_split(data: pd.DataFrame, split_index: int) -> pd.DataFrame:
+    """
+    Remove stock split from data.
+
+    Args:
+        data: Stock price data.
+        split_index: Index on which stock split occurs.
+
+    Returns:
+        Adjusted data.
+    """
+    split_factor = (
+        data.price.values[split_index] / data.price.values[split_index + 1]
+    )
+    data.price[split_index + 1 :] = data.price[split_index + 1 :] * split_factor
+    data.volume[split_index + 1 :] = (
+        data.volume[split_index + 1 :] / split_factor
+    )
+
+    return data

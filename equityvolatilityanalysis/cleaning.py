@@ -1,177 +1,109 @@
-"""
-Cleaning
-"""
+"""Cleaning script"""
 
-import string
-
-import pandas as pd
+import datetime as dt
+from typing import Tuple
 
 import functions
+import pandas as pd
 
-columns_lst = [
-    "Stock",
-    "Unclean size",
-    "Repeated entries",
-    "Rows with missing/invalid data",
-]
 
-cleaning_stats_df_lst = []
-stock_df_lst = []
+def clean_stock_data(
+    stock_data: pd.DataFrame,
+    market_open: dt.datetime,
+    market_close: dt.datetime,
+    outlier_cutoff: float,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Cleans stock data by removing outliers, removing duplicate entries and
+    invalid entries.
 
-# Outlier price range for each stock. These numbers represent the sum of the difference of the outlier price to its two neighbours.
-# E.g. say we have prices 3, 400, 4. We see 400 is likely an outlier, the relevant cutoff in this case is 400 - 3 + 400 - 4 = 793
-outlier_cutoff_dict = {"A": 20, "B": 100, "C": 0.9, "D": 100}
+    Args:
+        stock_data: Raw stock data.
+        market_open: Time of market open.
+        market_close: Time of market close.
+        outlier_cutoff: Cutoff values for outliers in the stock price. The
+        cutoff is the sum of the difference between a price and its prior and
+        subsequent prices. For example, prices 3, 400, 4 would have a cutoff of
+        793.
 
-# For each stock...
-for letter in [*string.ascii_uppercase][:4]:
-
-    filename = f"data/stock_{letter}.csv"
-
-    # Import raw data
-    stock_letter_df_unclean = pd.read_csv(filename)
-
-    # plt.figure()
-    # plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean.volume, label = 'Before Cleaning')
-
-    # Length before cleaning
-    stock_letter_df_unclean_length = len(stock_letter_df_unclean)
-
-    # df of cleaning stats for current dataset
-    data = [letter, stock_letter_df_unclean_length] + [0] * (
-        len(columns_lst) - 2
+    Returns:
+        Cleaned stock data and cleaning stats.
+    """
+    cleaning_columns_lst = [
+        "Unclean size",
+        "Repeated entries",
+        "Rows with missing/invalid data",
+    ]
+    cleaning_df = pd.DataFrame(
+        [[None] * len(cleaning_columns_lst)], columns=cleaning_columns_lst
     )
-    stock_letter_data_cleaning_stats_df = pd.DataFrame(
-        [data], columns=columns_lst
-    )
+    cleaning_df["Unclean size"] = len(stock_data)
+    stock_df_unclean_length = cleaning_df["Unclean size"]
 
     # Count duplicate time entries
-    stock_letter_df_unclean = stock_letter_df_unclean.drop_duplicates(
-        subset=["ts"], ignore_index=True
-    )
-    stock_letter_data_cleaning_stats_df[
-        "Repeated entries"
-    ] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
+    stock_data = stock_data.drop_duplicates(subset=["ts"], ignore_index=True)
+    cleaning_df["Repeated entries"] = stock_df_unclean_length - len(stock_data)
 
-    # Count number of rows containing missing values or negative values or invalid (i.e. non numeric values)
-    stock_letter_df_unclean_length = len(stock_letter_df_unclean)
-    stock_letter_df_unclean = stock_letter_df_unclean.dropna()
-    stock_letter_df_unclean = stock_letter_df_unclean.drop(
-        stock_letter_df_unclean[stock_letter_df_unclean["price"] < 0].index
-    )
-    stock_letter_df_unclean = stock_letter_df_unclean.drop(
-        stock_letter_df_unclean[stock_letter_df_unclean["volume"] < 0].index
-    )
+    # Count number of rows containing missing values or negative values or
+    # invalid (i.e. non numeric values)
+    stock_df_unclean_length = len(stock_data)
+    stock_data = stock_data.dropna()
+    stock_data = stock_data.drop(stock_data[stock_data["price"] < 0].index)
+    stock_data = stock_data.drop(stock_data[stock_data["volume"] < 0].index)
 
     # Convert times into datetime objects
-    stock_letter_df_unclean["ts"] = pd.to_datetime(
-        stock_letter_df_unclean["ts"]
-    )
+    stock_data["ts"] = pd.to_datetime(stock_data["ts"])
 
     # Ensure time ordered
-    if not stock_letter_df_unclean.equals(
-        stock_letter_df_unclean.sort_values(by=["ts"])
-    ):
+    if not stock_data.equals(stock_data.sort_values(by=["ts"])):
         print("Raw data not in ascending time series")
-        stock_letter_df_unclean = stock_letter_df_unclean.sort_values(by=["ts"])
+        stock_data = stock_data.sort_values(by=["ts"])
 
     # Remove data outside of market hours
-    if letter in "AB":
-        stock_letter_df_unclean["Market Hours"] = stock_letter_df_unclean[
-            "ts"
-        ].apply(functions.market_hours_AB)
-    else:
-        stock_letter_df_unclean["Market Hours"] = stock_letter_df_unclean[
-            "ts"
-        ].apply(functions.market_hours_CD)
-    stock_letter_df_unclean = stock_letter_df_unclean[
-        stock_letter_df_unclean["Market Hours"]
-    ]
-    stock_letter_df_unclean = stock_letter_df_unclean.drop(
-        ["Market Hours"], axis=1
+    stock_data["Market Hours"] = stock_data["ts"].apply(
+        functions.market_hours, args=(market_open, market_close)
     )
 
-    stock_letter_data_cleaning_stats_df[
+    stock_data = stock_data[stock_data["Market Hours"]]
+    stock_data = stock_data.drop(["Market Hours"], axis=1)
+
+    cleaning_df[
         "Rows with missing/invalid data"
-    ] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
+    ] = stock_df_unclean_length - len(stock_data)
 
     # Remove outliers
-    # I choose to define an outlier by a point which is largely different to 2 similar points either side of it.
-    # cutoff is defined as TWICE the distance from the outlier to the two neighbouring points
-    stock_letter_df_unclean[
-        "2nd_price_difference"
-    ] = stock_letter_df_unclean.price.diff().diff()
-    stock_letter_df_unclean["2nd_price_difference"] = stock_letter_df_unclean[
+    # I choose to define an outlier by a point which is largely different to 2
+    # similar points either side of it.
+    # cutoff is defined as TWICE the distance from the outlier to the two
+    # neighbouring points
+
+    stock_data["2nd_price_difference"] = stock_data.price.diff().diff()
+    stock_data["2nd_price_difference"] = stock_data[
         "2nd_price_difference"
     ].shift(-1)
-    cutoff__ = outlier_cutoff_dict[letter]
-    stock_letter_df_unclean["2nd_price_difference"] = stock_letter_df_unclean[
+
+    stock_data["2nd_price_difference"] = stock_data[
         "2nd_price_difference"
-    ].apply(functions.outlier, args=(cutoff__,))
-    stock_letter_df_unclean_length = len(stock_letter_df_unclean)
-    stock_letter_df_unclean = stock_letter_df_unclean.dropna()
-    stock_letter_data_cleaning_stats_df[
-        "Outliers"
-    ] = stock_letter_df_unclean_length - len(stock_letter_df_unclean)
-    stock_letter_df_unclean = stock_letter_df_unclean.drop(
-        columns=["2nd_price_difference"]
+    ].apply(functions.outlier, args=(outlier_cutoff,))
+    stock_letter_df_unclean_length = len(stock_data)
+    stock_data = stock_data.dropna()
+    cleaning_df["Outliers"] = int(
+        stock_letter_df_unclean_length - len(stock_data)
     )
+    stock_data = stock_data.drop(columns=["2nd_price_difference"])
 
-    # Removing stock split with stock D
-    if letter == "D":
-        # Index on which the split happens is observed
-        split_index = 32435
-        split_factor = (
-            stock_letter_df_unclean.price.values[split_index]
-            / stock_letter_df_unclean.price.values[split_index + 1]
-        )
-        stock_letter_df_unclean.price[split_index + 1 :] = (
-            stock_letter_df_unclean.price[split_index + 1 :] * split_factor
-        )
-        stock_letter_df_unclean.volume[split_index + 1 :] = (
-            stock_letter_df_unclean.volume[split_index + 1 :] / split_factor
-        )
-
-    # Check if first and/or last prices are outliers becuase the previous outlier method cannot handle these
+    # Check if first and/or last prices are outliers becuase the previous
+    # outlier method cannot handle these
     if (
-        abs(
-            stock_letter_df_unclean.price.values[0]
-            - stock_letter_df_unclean.price.values[1]
-        )
-        > outlier_cutoff_dict[letter]
+        abs(stock_data.price.values[0] - stock_data.price.values[1])
+        > outlier_cutoff
     ):
-        stock_letter_df_unclean = stock_letter_df_unclean.drop(
-            index=stock_letter_df_unclean.index[0], axis=0
-        )
+        stock_data = stock_data.drop(index=stock_data.index[0], axis=0)
 
     if (
-        abs(
-            stock_letter_df_unclean.price.values[-1]
-            - stock_letter_df_unclean.price.values[-2]
-        )
-        > outlier_cutoff_dict[letter]
+        abs(stock_data.price.values[-1] - stock_data.price.values[-2])
+        > outlier_cutoff
     ):
-        stock_letter_df_unclean = stock_letter_df_unclean.drop(
-            index=stock_letter_df_unclean.index[-1], axis=0
-        )
+        stock_data = stock_data.drop(index=stock_data.index[-1], axis=0)
 
-    # plt.plot(stock_letter_df_unclean.index, stock_letter_df_unclean.volume, label = 'After Cleaning')
-    # plt.title('Stock D')
-    # plt.ylabel('Volume')
-    # plt.xlabel('Time')
-    # ax = plt.gca()
-    # ax.axes.xaxis.set_ticklabels([])
-    # plt.legend()
-    # plt.savefig('data/Vol_D.png', format = 'png', dpi = 800)
-    # plt.show()
-    # break
-
-    stock_df_lst.append(stock_letter_df_unclean)
-    cleaning_stats_df_lst.append(stock_letter_data_cleaning_stats_df)
-
-
-cleaning_stats_df = pd.concat(cleaning_stats_df_lst, axis=0, ignore_index=True)
-
-if __name__ == "__main__":
-    print(cleaning_stats_df)
-
-    print("END 1")
+    return stock_data, cleaning_df
